@@ -32,7 +32,7 @@ fig = px.bar(top, x="rank", y=["f_volume", "f_severity", "f_road", "f_peak"],
              title="Why these cells score high (stacked Congestion Impact Score factors)")
 st.plotly_chart(fig, width="stretch")
 st.info("**Congestion Impact Score (proxy)** = 0.25·Volume + 0.30·Severity + "
-        "0.30·RoadCriticality + 0.15·PeakOverlap. Severity already folds in vehicle "
-        "footprint. This is a **proxy from enforcement data — not a direct speed/flow "
-        "measurement.** Weights are policy-tunable in config.yaml; road-speed calibration "
-        "(MapmyIndia/Google) is an optional validation layer, see Impact & ROI.")
+        "0.30·RoadCriticality + 0.15·PeakOverlap. Severity folds in vehicle footprint; "
+        "road criticality is parsed from the dataset's own `location` text. This is a "
+        "**proxy from the provided enforcement data — not a direct speed/flow measurement, "
+        "and no external data.** Weights are policy-tunable in config.yaml.")

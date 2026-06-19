@@ -18,6 +18,11 @@
 2. **Round 2 — Prototype phase.** Pick **one of three** problem statements and build a working prototype on **real BTP data** + MapmyIndia resources.
 3. **Finale — Onsite** at Flipkart HQ.
 
+## Round 2 Constraints (rules)
+
+- **No external data.** Solutions must be built **only on the provided dataset(s)** — no outside data sources (no OSM, no third-party APIs, no scraped data). ParkPulse complies: every signal, including the road-criticality factor, is derived from columns in the provided CSV (e.g. the `location` text and `junction_name`).
+- Solo teams (1 person). Online submission via HackerEarth.
+
 ## Round 2 Judging Criteria
 
 Expert panel (BTP + Flipkart). Evaluates:
@@ -121,7 +126,7 @@ For a **solo participant with ~3 days**, PS1 wins on every practical axis:
 - **Finishable** — clear, demoable artifact; lowest technical risk.
 - **Undeniably about Bengaluru** — real BTP records (PS3 would use generic public data; PS2's data is sparse for what it asks).
 - **Differentiation by execution depth** (beats the "everyone picks P1/P2" crowd):
-  1. A defensible **Congestion Impact Score (proxy)** — honestly framed as derived from enforcement-data signals (volume, severity, vehicle footprint, road criticality, peak overlap), **not a direct speed/flow measurement**. Optional **MapmyIndia/Google** speed comparison is a validation layer only (uses a partner resource). Naming it a proxy and stating the limitation is itself a credibility win with BTP judges.
+  1. A defensible **Congestion Impact Score (proxy)** — honestly framed as derived from in-dataset signals (volume, severity, vehicle footprint, road criticality parsed from the `location` text, peak overlap), **not a direct speed/flow measurement**. Built only on the provided data (**no external data**, per rules). Naming it a proxy and stating the limitation is itself a credibility win with BTP judges.
   2. A **predictive/proactive** layer (forecast tomorrow's hotspots) — directly answers the "reactive patrol" pain point.
   3. **Quantified ROI** (targeted vs. random patrol coverage).
 

@@ -3,7 +3,7 @@
   "confirmed_violations": 248369,
   "n_stations": 54,
   "n_hotspots": 2532,
-  "top20_impact_share": 0.356,
+  "top20_impact_share": 0.34,
   "evening_enforcement_share": 0.002,
   "repeat_offenders": 711,
   "precision_at_20": 0.85,

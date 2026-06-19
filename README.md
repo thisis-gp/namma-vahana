@@ -9,8 +9,8 @@
 ## What it does
 
 1. **Hotspot detection** — buckets 298,443 real parking violations into H3 hexagons (res 9 ≈ 174 m) and cross-checks density with DBSCAN.
-2. **Congestion Impact Score (proxy)** — ranks every cell by `0.25·Volume + 0.30·Severity + 0.30·RoadCriticality + 0.15·PeakOverlap`. Severity folds in violation type + vehicle footprint.
-   *This is a proxy from enforcement data — not a direct speed/flow measurement. Road-speed (MapmyIndia/Google) calibration is an optional validation layer.*
+2. **Congestion Impact Score (proxy)** — ranks every cell by `0.25·Volume + 0.30·Severity + 0.30·RoadCriticality + 0.15·PeakOverlap`. Severity folds in violation type + vehicle footprint; road criticality is parsed from the dataset's own `location` text (main road / ring road / circle / residential …).
+   *This is a proxy from enforcement data — not a direct speed/flow measurement. Built entirely from the provided dataset; **no external data**.*
 3. **Next-shift forecast** — a seasonal-naive (weekday × shift) model predicts tomorrow's hotspot intensity per cell.
 4. **Patrol optimizer** — greedily allocates N units per shift to the highest `intensity × impact` cells, exported as a CSV roster.
 5. **Dashboard** — Streamlit + pydeck: animated 3D hotspot map, hotspot explorer, deployment plan, impact/ROI.
@@ -52,12 +52,12 @@ The batch pipeline writes tiny Parquet artifacts; the dashboard only reads them,
 
 ## Data
 
-Bengaluru Traffic Police parking-violation records, Nov 2023 – Apr 2024 — 298,443 rows, 54 stations, fully geocoded. `data/` is gitignored.
+Bengaluru Traffic Police parking-violation records, Nov 2023 – Apr 2024 — 298,443 rows, 54 stations, fully geocoded. **Only the provided dataset is used — no external data** (per hackathon rules). Every signal, including the road-criticality factor, is derived from columns in this CSV. `data/` is gitignored.
 
 ## Tech stack
 
-Python 3.14 · pandas · pyarrow · h3 · scikit-learn (DBSCAN) · Streamlit · pydeck (deck.gl) · plotly · pytest.
-Stretch (not required for the MVP): LightGBM forecast, PuLP/ILP optimizer, OSMnx road class, MapmyIndia/Google speed calibration.
+Python 3.14 · pandas · pyarrow · h3 · scikit-learn (DBSCAN) · LightGBM (forecast) · Streamlit · pydeck (deck.gl) · plotly · pytest.
+Stretch (optional, not built): PuLP/ILP optimizer (greedy used today), SHAP explanations.
 
 ## Honest limitations
 

@@ -34,9 +34,10 @@ st.plotly_chart(px.bar(comp, x="Strategy", y="High-impact coverage",
                        title="Share of high-impact hotspots covered with the same patrol budget"),
                 width="stretch")
 
-st.caption("The **Congestion Impact Score is a proxy** built from enforcement data "
-           "(volume, severity, vehicle footprint, road criticality, peak overlap) — not a "
-           "direct speed/flow measurement.")
+st.caption("The **Congestion Impact Score is a proxy** built entirely from the provided "
+           "dataset (volume, severity, vehicle footprint, road criticality from the "
+           "`location` text, peak overlap) — not a direct speed/flow measurement, and no "
+           "external data.")
 if k.get("precision_at_20") is not None:
     lift = k["precision_at_20"] - (k.get("naive_precision_at_20") or 0)
     st.success(f"Next-shift hotspot forecast — **LightGBM Precision@20 = "
@@ -47,6 +48,3 @@ if k.get("precision_at_20") is not None:
 elif k.get("naive_precision_at_20") is not None:
     st.info(f"Next-shift forecast — seasonal-naive baseline Precision@20 = "
             f"{k['naive_precision_at_20']:.2f}.")
-if k.get("speed_corr_spearman"):
-    st.success("Optional validation layer: proxy score vs. measured road-speed drop "
-               f"(MapmyIndia/Google) — Spearman ρ = {k['speed_corr_spearman']:.2f}")
