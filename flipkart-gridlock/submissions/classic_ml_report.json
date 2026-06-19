@@ -1,0 +1,243 @@
+{
+  "results": [
+    {
+      "bracket": "TESTHOURS",
+      "n_train": 27576,
+      "n_hold": 41851,
+      "total_var": 0.023915888843166908,
+      "scores": {
+        "ridge": 0.8593,
+        "elasticnet": 0.8403,
+        "random_forest": 0.8238,
+        "extra_trees": 0.8427,
+        "hist_gbm": 0.7826,
+        "lgbm_classic": 0.7889,
+        "gbm_raw_features": 0.84
+      },
+      "model_meta": {
+        "ridge": {
+          "alpha": 100.0
+        },
+        "elasticnet": {
+          "m__alpha": 0.01,
+          "m__l1_ratio": 0.1
+        },
+        "random_forest": {},
+        "extra_trees": {},
+        "hist_gbm": {},
+        "lgbm_classic": {
+          "best_iteration": 165
+        },
+        "gbm_raw_features": {
+          "best_iteration": 209
+        }
+      },
+      "incremental_R2": [
+        {
+          "group_added": "location",
+          "n_features": 14,
+          "R2": 0.5573,
+          "ridge_alpha": 1.0
+        },
+        {
+          "group_added": "time",
+          "n_features": 20,
+          "R2": 0.6099,
+          "ridge_alpha": 100.0
+        },
+        {
+          "group_added": "road",
+          "n_features": 27,
+          "R2": 0.8224,
+          "ridge_alpha": 100.0
+        },
+        {
+          "group_added": "weather",
+          "n_features": 28,
+          "R2": 0.8224,
+          "ridge_alpha": 100.0
+        },
+        {
+          "group_added": "interactions",
+          "n_features": 35,
+          "R2": 0.8593,
+          "ridge_alpha": 100.0
+        }
+      ],
+      "ridge_top_coefs": [
+        {
+          "feature": "d48_testhrs",
+          "abs_coef": 0.08878
+        },
+        {
+          "feature": "hist_g",
+          "abs_coef": 0.04512
+        },
+        {
+          "feature": "RoadType_2",
+          "abs_coef": 0.03088
+        },
+        {
+          "feature": "ix_g_t",
+          "abs_coef": 0.02232
+        },
+        {
+          "feature": "min_sin",
+          "abs_coef": 0.02149
+        },
+        {
+          "feature": "RoadType_0",
+          "abs_coef": 0.01973
+        },
+        {
+          "feature": "ix_g_cos",
+          "abs_coef": 0.01702
+        },
+        {
+          "feature": "d48_std",
+          "abs_coef": 0.01437
+        }
+      ]
+    },
+    {
+      "bracket": "RANDOM",
+      "n_train": 55617,
+      "n_hold": 13810,
+      "total_var": 0.019723147158089597,
+      "scores": {
+        "ridge": 0.9112,
+        "elasticnet": 0.9054,
+        "random_forest": 0.9495,
+        "extra_trees": 0.9467,
+        "hist_gbm": 0.9491,
+        "lgbm_classic": 0.9537,
+        "gbm_raw_features": 0.9294
+      },
+      "model_meta": {
+        "ridge": {
+          "alpha": 0.01
+        },
+        "elasticnet": {
+          "m__alpha": 0.01,
+          "m__l1_ratio": 0.1
+        },
+        "random_forest": {},
+        "extra_trees": {},
+        "hist_gbm": {},
+        "lgbm_classic": {
+          "best_iteration": 201
+        },
+        "gbm_raw_features": {
+          "best_iteration": 187
+        }
+      },
+      "incremental_R2": [],
+      "ridge_top_coefs": [
+        {
+          "feature": "hist_g",
+          "abs_coef": 0.21737
+        },
+        {
+          "feature": "log_hist_g",
+          "abs_coef": 0.19778
+        },
+        {
+          "feature": "min_sin",
+          "abs_coef": 0.05486
+        },
+        {
+          "feature": "ix_g_rt",
+          "abs_coef": 0.04978
+        },
+        {
+          "feature": "ix_t_sin",
+          "abs_coef": 0.04099
+        },
+        {
+          "feature": "ix_g_t",
+          "abs_coef": 0.03737
+        },
+        {
+          "feature": "d48_testhrs",
+          "abs_coef": 0.02206
+        },
+        {
+          "feature": "in_test_band",
+          "abs_coef": 0.01656
+        }
+      ]
+    },
+    {
+      "bracket": "D49_MORNING",
+      "n_train": 69427,
+      "n_hold": 7872,
+      "total_var": 0.02096207685798383,
+      "scores": {
+        "ridge": 0.7384,
+        "elasticnet": 0.715,
+        "random_forest": 0.7904,
+        "extra_trees": 0.806,
+        "hist_gbm": 0.7369,
+        "lgbm_classic": 0.758,
+        "gbm_raw_features": 0.7709
+      },
+      "model_meta": {
+        "ridge": {
+          "alpha": 0.01
+        },
+        "elasticnet": {
+          "m__alpha": 0.01,
+          "m__l1_ratio": 0.1
+        },
+        "random_forest": {},
+        "extra_trees": {},
+        "hist_gbm": {},
+        "lgbm_classic": {
+          "best_iteration": 161
+        },
+        "gbm_raw_features": {
+          "best_iteration": 291
+        }
+      },
+      "incremental_R2": [],
+      "ridge_top_coefs": [
+        {
+          "feature": "hist_g",
+          "abs_coef": 0.20599
+        },
+        {
+          "feature": "log_hist_g",
+          "abs_coef": 0.20027
+        },
+        {
+          "feature": "min_sin",
+          "abs_coef": 0.05095
+        },
+        {
+          "feature": "ix_g_rt",
+          "abs_coef": 0.05085
+        },
+        {
+          "feature": "ix_g_t",
+          "abs_coef": 0.04029
+        },
+        {
+          "feature": "ix_t_sin",
+          "abs_coef": 0.03808
+        },
+        {
+          "feature": "d48_std",
+          "abs_coef": 0.01733
+        },
+        {
+          "feature": "in_test_band",
+          "abs_coef": 0.01659
+        }
+      ]
+    }
+  ],
+  "winner": "extra_trees",
+  "winner_testhours_R2": 0.8427,
+  "winner_random_R2": 0.9467,
+  "selection": "0.6 * testhours_R2 + 0.4 * random_R2"
+}

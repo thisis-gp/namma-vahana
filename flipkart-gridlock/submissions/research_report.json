@@ -1,0 +1,58 @@
+{
+  "results": [
+    {
+      "bracket": "TESTHOURS",
+      "scores": {
+        "baseline_gbm": 0.8399761081133774,
+        "gbm_interactions": 0.8417201110503906,
+        "gbm_ix_ratio": 0.8430286177676276,
+        "extra_trees_classic": 0.842741087038379,
+        "blend_ix_ratio_et": 0.8480800314688208
+      },
+      "meta": {
+        "baseline_gbm": {
+          "best_iteration": 209
+        },
+        "gbm_interactions": {
+          "best_iteration": 206
+        },
+        "gbm_ix_ratio": {
+          "best_iteration": 188
+        },
+        "extra_trees_classic": {},
+        "blend_ix_ratio_et": {
+          "w_gbm": 0.5
+        }
+      }
+    },
+    {
+      "bracket": "RANDOM",
+      "scores": {
+        "baseline_gbm": 0.9293749569007284,
+        "gbm_interactions": 0.9346782179739892,
+        "gbm_ix_ratio": 0.9365194529204511,
+        "extra_trees_classic": 0.9467389928679756,
+        "blend_ix_ratio_et": 0.9468776574726262
+      },
+      "meta": {
+        "baseline_gbm": {
+          "best_iteration": 187
+        },
+        "gbm_interactions": {
+          "best_iteration": 179
+        },
+        "gbm_ix_ratio": {
+          "best_iteration": 153
+        },
+        "extra_trees_classic": {},
+        "blend_ix_ratio_et": {
+          "w_gbm": 0.1
+        }
+      }
+    }
+  ],
+  "winner": "blend_ix_ratio_et",
+  "winner_testhours_R2": 0.8480800314688208,
+  "winner_random_R2": 0.9468776574726262,
+  "baseline_testhours_R2": 0.84
+}

@@ -1,0 +1,105 @@
+TRAFFIC DEMAND PREDICTION - HOW OUR SOLUTION WORKS
+===================================================
+
+THE TASK
+--------
+For each road location and each time of day, predict how busy it is (the
+"demand", a number between 0 and 1). The score is 100 times R-squared. R-squared
+rewards getting the big swings right, so the busy roads matter far more than the
+quiet ones.
+
+
+THE DATA WE WERE GIVEN
+----------------------
+- Two days of records to learn from. The first day is complete. The second day
+  only has the early morning hours.
+- A test set we have to predict: the second day, during the daytime.
+- For each record we get the location, the time, the road type, the number of
+  lanes, whether large vehicles are allowed, nearby landmarks, the weather and
+  the temperature.
+
+
+WHAT WE LEARNED ABOUT THE DATA
+------------------------------
+- The road type is by far the biggest clue. Highways are busy (around 0.62 on
+  average), small streets are in the middle (around 0.27), and residential roads
+  are quiet (around 0.06).
+- The number of lanes and whether large vehicles are allowed also matter.
+- The weather, the temperature and the landmarks turned out to be noise. They
+  have almost no effect on how busy a road is, so we do not rely on them.
+- Most of the difference between roads comes down to the location itself. A given
+  spot tends to be busy or quiet day after day.
+
+
+THE MODEL
+---------
+We use XGBoost, a standard and reliable tool for this kind of table of numbers.
+It builds a series of small decision trees, each one fixing the mistakes of the
+last. We picked it after trying a few alternatives; it gave the best results on
+this data.
+
+Three decisions are what pushed the score up.
+
+1. USE BOTH DAYS OF TRAINING DATA.
+   Earlier versions only learned from the first, complete day and threw away the
+   second morning. Keeping both days lets the model see how the second day
+   behaves, and that alone added a little to the score.
+
+2. ADD A "LOCATION AVERAGE" FEATURE.
+   For every location we work out its average demand from the training data and
+   feed that number in as a clue. This is the single most useful feature, because
+   it tells the model up front whether a spot is usually busy or quiet. We work
+   it out only from the training data and reuse it for the test set, so there is
+   no cheating. We also add how much each location varies.
+
+3. PAY MORE ATTENTION TO BUSY ROADS, AND AVERAGE SEVERAL RUNS.
+   Because most roads are quiet, a plain model plays it safe and guesses low
+   everywhere. That leaves the busy highways predicted too low, and those are
+   exactly the rows the score cares about. So we give each record a weight of
+   "1 plus 5 times its demand". A busy highway then gets a weight of about 4 and
+   a quiet road about 1.3, so the busy road counts roughly three times as much.
+   The model learns to push those busy-road predictions up where they belong.
+
+   How we landed on 5: we tried a range of strengths on a slice of data the model
+   had not trained on, and checked which scored best. Weighting by 3, 5 or 8 all
+   came out very close. More weight kept helping by a hair, but pushing it too far
+   (10 and above) started to hurt the quiet roads. So 5 is a safe middle: strong
+   enough to fix the busy-road problem, not so strong that it chases noise or
+   ignores everything else.
+
+   We also train the model seven times, each with a different random shuffle, and
+   average the seven sets of predictions. Each run is slightly different by
+   chance, and averaging smooths out that randomness for a steadier result.
+
+
+WHAT WE TRIED AND DROPPED
+-------------------------
+We tested plenty of ideas that did not help, and we left them out rather than
+keep clutter:
+- Using the exact past value of a location at the exact same time. It sounds
+  perfect, but the conditions change from day to day, so it actually made
+  predictions worse.
+- Deeper, more complex trees. They memorised the training day instead of learning
+  the general pattern, and scored lower on the real leaderboard.
+- Mixing in other model types. They were weaker here and dragged the result down.
+- Dropping the weather and temperature columns. No effect either way, so we left
+  the model to ignore them on its own.
+
+
+THE STEPS IN THE NOTEBOOK
+-------------------------
+1. Load both days of training data and the test data.
+2. Work out each location's average demand and spread.
+3. Build the features: time of day, a rush-hour flag, latitude and longitude,
+   the location average, lanes-on-a-highway, and simple yes/no columns for the
+   text fields.
+4. Train XGBoost seven times with the busy-road weighting and average the runs.
+5. Save predictions between 0 and 1 to submission.csv.
+
+
+THE RESULT
+----------
+This scores about 91.2 on the leaderboard, up from around 90 for the plain
+version. The honest limit here is that part of the day-to-day change in traffic
+is simply random and cannot be predicted from the columns we were given, so we
+focused on getting the steady, predictable part as right as we could.

@@ -1,0 +1,40 @@
+paths:
+  raw_csv: data/raw/violations.csv
+  interim_dir: data/interim
+  artifacts_dir: artifacts
+bbox: {min_lat: 12.80, max_lat: 13.29, min_lon: 77.44, max_lon: 77.77}
+h3: {res_op: 9, res_zoom: 10, res_area: 8}
+timezone: Asia/Kolkata
+shift_slots:
+  MORNING: [6, 12]
+  AFTERNOON: [12, 17]
+  EVENING: [17, 22]
+  NIGHT: [22, 6]
+peak_hours: {morning: [8, 11], evening: [17, 20]}
+validation:
+  tier_a: [approved]
+  tier_b: [approved, "NULL", created1, processing]
+  exclude: [rejected, duplicate]
+cis_weights: {volume: 0.25, severity: 0.30, road: 0.30, peak: 0.15}
+severity_weights:
+  "DOUBLE PARKING": 1.0
+  "PARKING IN A MAIN ROAD": 1.0
+  "PARKING NEAR ROAD CROSSING": 1.0
+  "PARKING NEAR TRAFFIC LIGHT": 1.0
+  "PARKING ON ZEBRA": 1.0
+  "WRONG PARKING": 0.7
+  "NO PARKING": 0.7
+  "PARKING ON FOOTPATH": 0.4
+  "PARKING NEAR BUSTOP/SCHOOL/HOSPITAL ETC": 0.4
+  "DEFECTIVE NUMBER PLATE": 0.0
+  "BLACK FILM": 0.0
+  "REFUSE TO GO FOR HIRE": 0.0
+  _default: 0.6
+vehicle_footprint:
+  commercial: 1.5
+  car: 1.0
+  two_wheeler: 0.4
+commercial_types: [PASSENGER AUTO, MAXI-CAB, LGV, GOODS AUTO, "BUS (BMTC/KSRTC)", PRIVATE BUS, LORRY/GOODS VEHICLE, TEMPO, TANKER, HGV, VAN]
+two_wheeler_types: [SCOOTER, "MOTOR CYCLE", MOPED]
+optimizer: {n_units_per_shift: 6, max_cells_per_unit: 3}
+split: {train_end: "2024-03-01", val_end: "2024-03-21", test_end: "2024-04-08"}
