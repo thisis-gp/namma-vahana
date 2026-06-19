@@ -15,7 +15,9 @@ def run() -> dict:
     evening = (df["shift"] == "EVENING").mean()
     repeats = int((df.groupby("vehicle_number")["id"].count() >= 10).sum())
     fm_path = ARTIFACTS / "_forecast_metrics.json"
-    naive_p20 = json.load(open(fm_path)).get("naive_precision_at_20") if fm_path.exists() else None
+    fm = json.load(open(fm_path)) if fm_path.exists() else {}
+    naive_p20 = fm.get("naive_precision_at_20")
+    lgbm_p20 = fm.get("precision_at_20")
     k = {
         "total_violations": total,
         "confirmed_violations": confirmed,
@@ -24,7 +26,7 @@ def run() -> dict:
         "top20_impact_share": round(float(top20), 3),
         "evening_enforcement_share": round(float(evening), 3),
         "repeat_offenders": repeats,
-        "precision_at_20": None,
+        "precision_at_20": round(lgbm_p20, 3) if lgbm_p20 is not None else None,
         "naive_precision_at_20": round(naive_p20, 3) if naive_p20 is not None else None,
         "speed_corr_spearman": None,
         "date_min": df["date"].min(),

@@ -22,6 +22,14 @@ def normalize(x) -> np.ndarray:
 
 
 def run(road_scores: dict | None = None) -> pd.DataFrame:
+    if road_scores is None:
+        try:
+            from src.osm_roads import load_cached
+            road_scores = load_cached()
+            if road_scores:
+                print("Using cached OSM road classes for road-criticality factor.")
+        except Exception:
+            road_scores = None
     df = pd.read_parquet(INTERIM / "clean.parquet")
     df["sev"] = [severity_for(v, vt) for v, vt in zip(df["violations"], df["vehicle_type"])]
     cells = df.groupby("h3").agg(

@@ -5,7 +5,7 @@ if __name__ == "__main__":
     hotspots.run()
     scoring.run()
     scoring.build_hourly_heat()
-    forecast.run()
+    forecast.run_best()
     optimizer.run()
     kpis.run()
     print("\nPipeline complete. artifacts/ refreshed.")
