@@ -25,14 +25,26 @@ fig = px.line(cis, x="rank_pct", y="cum_share",
 fig.add_hline(y=0.8, line_dash="dot")
 st.plotly_chart(fig, width="stretch")
 
-st.subheader("Reactive (uniform) vs ParkPulse (impact-targeted) patrol coverage")
-comp = pd.DataFrame({
-    "Strategy": ["Uniform patrol", "ParkPulse targeted"],
-    "High-impact coverage": [0.30, 0.80],
-})
-st.plotly_chart(px.bar(comp, x="Strategy", y="High-impact coverage",
-                       title="Share of high-impact hotspots covered with the same patrol budget"),
-                width="stretch")
+st.subheader("Outcome — backtested enforcement uplift (held-out days)")
+if k.get("uplift_pp") is not None:
+    c1, c2, c3 = st.columns(3)
+    c1.metric(f"ParkPulse coverage (K={k['uplift_k']})", f"{k['parkpulse_coverage'] * 100:.0f}%")
+    c2.metric("Reactive (chase-yesterday)", f"{k['reactive_coverage'] * 100:.0f}%")
+    c3.metric("Uplift", f"+{k['uplift_pp']:.0f} pp",
+              help="Extra share of next-day impact-weighted violations intercepted with the "
+                   "same patrol budget, measured on held-out test days.")
+    comp = pd.DataFrame({
+        "Strategy": ["Reactive (chase yesterday)", "ParkPulse (forecast + impact)"],
+        "High-impact coverage": [k["reactive_coverage"], k["parkpulse_coverage"]],
+    })
+    st.plotly_chart(px.bar(comp, x="Strategy", y="High-impact coverage", text_auto=".0%",
+                           title=f"Share of next-day high-impact violations intercepted "
+                                 f"(same {k['uplift_k']} patrols/shift)"),
+                    width="stretch")
+    st.caption("Backtest: on each held-out day-shift, both strategies pick the same number of "
+               "cells; we measure the share of that period's *actual* impact-weighted violations "
+               "(count × impact score) that fell inside the chosen cells. Reactive = patrol "
+               "yesterday's busiest cells (the status quo named in the problem statement).")
 
 st.caption("The **Congestion Impact Score is a proxy** built entirely from the provided "
            "dataset (volume, severity, vehicle footprint, road criticality from the "

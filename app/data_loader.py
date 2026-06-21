@@ -32,5 +32,15 @@ def patrol():
 
 
 @st.cache_data
+def backtest():
+    return pd.read_parquet(ART / "backtest.parquet")
+
+
+@st.cache_data
+def watchlist():
+    return pd.read_parquet(ART / "watchlist.parquet")
+
+
+@st.cache_data
 def kpis():
     return json.load(open(ART / "kpis.json"))

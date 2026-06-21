@@ -108,6 +108,8 @@ def run_lgbm() -> pd.DataFrame:
               callbacks=[lgb.early_stopping(40, verbose=False)])
 
     test["pred"] = model.predict(test[FEATURES]).clip(min=0)
+    test[["h3", "date", "shift", "y", "pred", "lag1", "cis"]].to_parquet(
+        ARTIFACTS / "_backtest_panel.parquet")
     actual = test.groupby("h3")["y"].sum().to_dict()
     pred_agg = test.groupby("h3")["pred"].sum().to_dict()
     p20_lgbm = precision_at_k(actual, pred_agg, 20)

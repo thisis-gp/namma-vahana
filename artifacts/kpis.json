@@ -6,8 +6,13 @@
   "top20_impact_share": 0.34,
   "evening_enforcement_share": 0.002,
   "repeat_offenders": 711,
+  "repeat_offender_share": 0.033,
   "precision_at_20": 0.85,
   "naive_precision_at_20": 0.75,
+  "uplift_k": 6,
+  "parkpulse_coverage": 0.231,
+  "reactive_coverage": 0.104,
+  "uplift_pp": 12.7,
   "speed_corr_spearman": null,
   "date_min": "2023-11-10",
   "date_max": "2024-04-08"
