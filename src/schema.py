@@ -15,6 +15,19 @@ PATROL_PLAN = ["shift", "h3", "lat", "lon", "junction_name", "police_station",
                "expected_violations", "dominant_vehicle", "dominant_violation",
                "cis", "assigned_unit", "rank"]
 
+HOTSPOTS_ENRICHED = ["h3", "lat", "lon", "cis", "priority_score", "priority_pct", "rank",
+                     "violation_count", "confirmed_count", "dominant_station", "junction_name",
+                     "dominant_vehicle", "dominant_violation", "severity_10", "road_class",
+                     "repeat_offender_ratio", "intervention_type", "correction_rate",
+                     "confidence_flag", "near_school", "near_hospital", "blocks_bus",
+                     "peak_hours", "peak_lq", "units_recommended", "nl_summary"]
+
+STATIONS = ["police_station", "violations", "devices", "enforcement_gap",
+            "gap_confidence", "units_recommended"]
+
+CITIZEN = ["h3", "lat", "lon", "junction_name", "dominant_station", "fine_risk",
+           "risk_band", "peak_hours", "nl_summary"]
+
 BACKTEST = ["k", "parkpulse_coverage", "reactive_coverage", "uplift_pp"]
 
 WATCHLIST = ["vehicle_number", "vehicle_type", "violations", "distinct_cells",

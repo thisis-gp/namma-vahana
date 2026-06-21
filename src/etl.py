@@ -6,7 +6,8 @@ from src.config import (RAW_CSV, INTERIM, BBOX, H3, TZ, VALIDATION,
 
 USECOLS = ["id", "latitude", "longitude", "location", "vehicle_type",
            "violation_type", "created_datetime", "police_station",
-           "junction_name", "validation_status", "vehicle_number"]
+           "junction_name", "validation_status", "vehicle_number",
+           "device_id", "updated_vehicle_number", "updated_vehicle_type"]
 
 
 def to_ist(s: pd.Series) -> pd.Series:
@@ -48,6 +49,12 @@ def run() -> pd.DataFrame:
     df["is_peak"] = df["hour"].map(_is_peak)
     vs = df["validation_status"].fillna("NULL")
     df["confirmed"] = ~vs.isin(VALIDATION["exclude"])
+    # a record is "corrected" if rejected, or its vehicle number/type was updated
+    upd_num = df["updated_vehicle_number"].notna() & (df["updated_vehicle_number"] != "NULL") & \
+        (df["updated_vehicle_number"] != df["vehicle_number"])
+    upd_typ = df["updated_vehicle_type"].notna() & (df["updated_vehicle_type"] != "NULL") & \
+        (df["updated_vehicle_type"] != df["vehicle_type"])
+    df["corrected"] = (vs == "rejected") | upd_num | upd_typ
     df["h3"] = [h3.latlng_to_cell(la, lo, H3["res_op"])
                 for la, lo in zip(df.latitude, df.longitude)]
     df["footprint"] = df["vehicle_type"].map(footprint_for_row)
