@@ -48,6 +48,16 @@ def css(accent):
       .nlsum {{background:#1a1d27;border-left:4px solid {accent};padding:10px 14px;
         border-radius:6px;font-size:1.02rem;line-height:1.5;margin:6px 0 10px;}}
       div.stButton > button {{border-radius:10px;font-weight:600;}}
+      .hero {{text-align:center;padding:3.2vh 0 1vh;}}
+      .hero h1 {{font-size:3.1rem;margin:0;letter-spacing:-1px;}}
+      .hero .tag {{font-size:1.15rem;color:#cfd3dc;margin-top:6px;}}
+      .pill {{display:inline-block;background:{accent}22;color:{accent};border:1px solid {accent}55;
+        padding:4px 12px;border-radius:999px;font-size:.8rem;font-weight:600;margin-top:10px;}}
+      .step {{background:#15171f;border:1px solid #262a36;border-radius:12px;padding:14px 16px;height:100%;}}
+      .step b {{color:{accent};}}
+      [data-testid="stMetric"] {{background:#15171f;border:1px solid #262a36;
+        border-radius:12px;padding:10px 14px;}}
+      [data-testid="stMetricValue"] {{font-size:1.7rem;}}
     </style>""", unsafe_allow_html=True)
 
 
@@ -107,16 +117,40 @@ def hotspot_card(r):
 # ----------------------------------------------------------------- landing
 def landing():
     css(POLICE_ACCENT)
-    st.markdown("<div style='text-align:center;margin-top:5vh'><h1>🅿️ ParkPulse</h1>"
-                "<p style='font-size:1.05rem;color:#aaa'>Bengaluru parking-congestion "
-                "intelligence — detect hotspots, forecast tomorrow, deploy smarter</p></div>",
+    st.markdown("<div class='hero'><h1>🅿️ ParkPulse</h1>"
+                "<div class='tag'>Tells Bengaluru Traffic Police <b>where & when</b> to patrol "
+                "tomorrow to clear the most traffic-choking illegal parking — and proves it "
+                "beats how they work today.</div>"
+                "<div class='pill'>100% on the provided dataset · no external data</div></div>",
                 unsafe_allow_html=True)
+
+    h = st.columns(4)
+    h[0].metric("Violations analyzed", f"{K['total_violations'] / 1000:.0f}K")
+    h[1].metric("Enforcement uplift", f"+{K['uplift_pp']:.0f} pp",
+                help="vs today's reactive patrol, same budget, on held-out days")
+    h[2].metric("Forecast Precision@20", f"{K['precision_at_20']:.2f}",
+                help=f"vs seasonal-naive {K['naive_precision_at_20']:.2f}")
+    h[3].metric("Hotspots mapped", f"{K['n_hotspots']:,}")
+
+    st.write("")
+    s = st.columns(3)
+    s[0].markdown("<div class='step'><b>1 · Detect & score</b><br/>Cluster 298K violations into "
+                  "hotspots and rank each by a Congestion Impact Score (proxy).</div>",
+                  unsafe_allow_html=True)
+    s[1].markdown("<div class='step'><b>2 · Forecast tomorrow</b><br/>Predict the next shift's "
+                  "worst hotspots so patrols are proactive, not reactive.</div>",
+                  unsafe_allow_html=True)
+    s[2].markdown("<div class='step'><b>3 · Deploy & prove</b><br/>Output a patrol roster — and "
+                  "backtest shows it more than doubles impact covered.</div>",
+                  unsafe_allow_html=True)
+
+    st.write("")
     _, mid, _ = st.columns([1, 2, 1])
     with mid:
         a, b = st.columns(2)
         with a.container(border=True):
             st.markdown("#### 👮 Police")
-            st.caption("Station dashboards, forecast, deployment plan & proven uplift.")
+            st.caption("Station dashboards, forecast, deployment roster & proven uplift.")
             st.text_input("Officer ID", placeholder="e.g. BLR-2287 (demo)")
             if st.button("Sign in as Police", type="primary", width="stretch"):
                 ss.role = "police"; st.rerun()
@@ -126,10 +160,9 @@ def landing():
             st.write(""); st.write("")
             if st.button("Enter as Citizen", width="stretch"):
                 ss.role = "citizen"; st.rerun()
-    st.markdown("<div style='text-align:center;margin-top:3vh;color:#888;font-size:.8rem'>"
-                f"Prototype · {K['total_violations']:,} Bengaluru Police violation records · "
-                f"{K['n_stations']} stations · Nov 2023–Apr 2024 · no external data</div>",
-                unsafe_allow_html=True)
+    st.markdown("<div style='text-align:center;margin-top:2vh;color:#888;font-size:.8rem'>"
+                f"Prototype · {K['total_violations']:,} Bengaluru Police records · "
+                f"{K['n_stations']} stations · Nov 2023–Apr 2024</div>", unsafe_allow_html=True)
 
 
 # ----------------------------------------------------------------- police
@@ -164,6 +197,12 @@ def police_dashboard():
         reset(); st.rerun()
     if hs.empty:
         st.info("No hotspots for this station."); method_link(); return
+
+    st.success(f"📊 **Proven outcome:** with the same patrol budget, ParkPulse covers "
+               f"**{K['parkpulse_coverage'] * 100:.0f}%** of next-day congestion impact vs "
+               f"**{K['reactive_coverage'] * 100:.0f}%** for today's reactive patrol — "
+               f"**+{K['uplift_pp']:.0f} percentage points** (backtested on held-out days). "
+               f"Forecast Precision@20 = {K['precision_at_20']:.2f}.")
 
     tabs = st.tabs(["🗺️ Hotspots", "📈 Forecast & Events", "🚓 Deployment & Outcome",
                     "🔁 Repeat Offenders"])
