@@ -23,22 +23,22 @@ def get_db_path() -> Path:
 DB_PATH = get_db_path()
 HOST = "127.0.0.1"
 PORT = 8000
+IS_PRODUCTION = os.environ.get("RENDER") == "true" or os.environ.get("VERCEL") == "1"
 
 
 def cors_origins() -> list[str]:
+    """Explicit allowlist only — no wildcard subdomains."""
     origins = [
         "http://127.0.0.1:3000",
         "http://localhost:3000",
+        "https://namma-vahana.vercel.app",
     ]
     extra = os.environ.get("CORS_ORIGINS", "")
     if extra:
-        origins.extend(x.strip() for x in extra.split(",") if x.strip())
-    vercel_url = os.environ.get("VERCEL_URL")
-    if vercel_url:
-        origins.append(f"https://{vercel_url}")
-    production = os.environ.get("VERCEL_PROJECT_PRODUCTION_URL")
-    if production:
-        origins.append(f"https://{production}")
+        for origin in extra.split(","):
+            origin = origin.strip()
+            if origin and origin not in origins:
+                origins.append(origin)
     return origins
 
 

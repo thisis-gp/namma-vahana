@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.config import CORS_ORIGINS
+from backend.config import CORS_ORIGINS, IS_PRODUCTION
 from backend.database import init_db
 from backend.repositories.officers import seed_officers_if_empty
 from backend.repositories.operations import seed_challans_if_empty, seed_reports_if_empty
@@ -30,14 +30,16 @@ def create_app(api_prefix: str = "/api") -> FastAPI:
         description="Smart parking intelligence for Namma Bengaluru",
         version="1.0.0",
         lifespan=lifespan,
+        docs_url=None if IS_PRODUCTION else "/docs",
+        redoc_url=None if IS_PRODUCTION else "/redoc",
+        openapi_url=None if IS_PRODUCTION else "/openapi.json",
     )
     app.add_middleware(
         CORSMiddleware,
         allow_origins=CORS_ORIGINS,
-        allow_origin_regex=r"https://.*\.(vercel\.app|onrender\.com)",
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_credentials=False,
+        allow_methods=["GET", "POST", "PATCH", "PUT", "OPTIONS"],
+        allow_headers=["Accept", "Content-Type"],
     )
     prefix = api_prefix.rstrip("/")
     app.include_router(health_router, prefix=prefix)

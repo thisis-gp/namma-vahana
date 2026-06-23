@@ -17,4 +17,4 @@ services:
       - key: PARKPULSE_DB
         value: backend/deploy/parkpulse.db
       - key: CORS_ORIGINS
-        value: https://namma-vahana.vercel.app,http://localhost:3000
+        value: https://namma-vahana.vercel.app
