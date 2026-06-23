@@ -1,0 +1,19 @@
+# Render Blueprint — free tier backend
+# One-click: https://dashboard.render.com/select-repo?type=blueprint
+services:
+  - type: web
+    name: namma-vahana-api
+    runtime: python
+    plan: free
+    region: singapore
+    branch: master
+    buildCommand: pip install -r requirements-api.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.4"
+      - key: PARKPULSE_DB
+        value: backend/deploy/parkpulse.db
+      - key: CORS_ORIGINS
+        value: https://namma-vahana.vercel.app,http://localhost:3000

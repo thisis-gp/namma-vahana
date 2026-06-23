@@ -12,6 +12,8 @@ def get_db_path() -> Path:
     override = os.environ.get("PARKPULSE_DB")
     if override:
         return Path(override)
+    if os.environ.get("RENDER") and DEPLOY_DB_PATH.exists():
+        return DEPLOY_DB_PATH
     if os.environ.get("VERCEL") and DEPLOY_DB_PATH.exists():
         return DEPLOY_DB_PATH
     return ROOT / "data" / "parkpulse.db"

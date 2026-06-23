@@ -5,7 +5,7 @@ from backend.schemas import (
 )
 from backend.services import analytics as svc
 
-router = APIRouter(prefix="/api", tags=["analytics"])
+router = APIRouter(tags=["analytics"])
 
 
 @router.get("/kpis", response_model=Kpis)

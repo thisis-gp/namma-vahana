@@ -21,7 +21,7 @@ from backend.services import operations as svc
 from backend.services import officers as officers_svc
 from backend.services import parking as parking_svc
 
-router = APIRouter(prefix="/api", tags=["operations"])
+router = APIRouter(tags=["operations"])
 
 
 @router.get("/challans", response_model=list[Challan])
