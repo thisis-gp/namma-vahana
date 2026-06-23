@@ -3,6 +3,9 @@ data/
 *.csv
 *.db
 
+# Pipeline / local caches
+cache/
+
 # Python
 __pycache__/
 *.pyc
