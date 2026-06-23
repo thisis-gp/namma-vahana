@@ -1,0 +1,328 @@
+@import "tailwindcss";
+
+/* Namma Vahana design system — street-signage identity.
+   Light civic surface; the boldness is spent in one place: the hotspot map. */
+
+:root {
+  /* Ground & surfaces — cool map-paper grey, never cream. */
+  --ground: #eceff3;
+  --surface: #ffffff;
+  --surface-2: #f5f8fb;
+  --line: #d8dee7;
+
+  /* Ink — signage ink, near-black blue-shifted. */
+  --ink: #14181f;
+  --ink-muted: #59636f;
+  --ink-faint: #8a93a0;
+
+  /* Cobalt — "parking / wayfinding / authority". The primary. */
+  --cobalt: #1e45c8;
+  --cobalt-deep: #16329a;
+  --cobalt-soft: #e7ecfb;
+
+  /* Amber — "enforcement heat / violation". The accent. */
+  --amber: #f4a100;
+  --amber-soft: #fdf0d4;
+
+  /* Asphalt — the ONLY dark zone: map canvas + footer. */
+  --asphalt: #0f1622;
+  --asphalt-2: #18212f;
+  --asphalt-line: #2a3647;
+
+  /* Heat / status */
+  --heat-high: #c42b22;
+  --danger: #c42b22;
+  --ok: #1f8a5b;
+}
+
+@theme inline {
+  --color-ground: var(--ground);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-cobalt: var(--cobalt);
+  --color-cobalt-deep: var(--cobalt-deep);
+  --color-cobalt-soft: var(--cobalt-soft);
+  --color-amber: var(--amber);
+  --color-amber-soft: var(--amber-soft);
+  --color-asphalt: var(--asphalt);
+  --color-asphalt-2: var(--asphalt-2);
+  --color-asphalt-line: var(--asphalt-line);
+  --color-heat-high: var(--heat-high);
+  --color-danger: var(--danger);
+  --color-ok: var(--ok);
+
+  --font-display: var(--font-display), "Archivo", sans-serif;
+  --font-sans: var(--font-sans), "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: var(--font-mono), "IBM Plex Mono", ui-monospace, monospace;
+}
+
+* {
+  border-color: var(--line);
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
+body {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--cobalt);
+  color: #fff;
+}
+
+/* Visible keyboard focus everywhere. */
+:focus-visible {
+  outline: 2px solid var(--cobalt);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* --- Type helpers --- */
+.font-display {
+  font-family: var(--font-display);
+}
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--ink-muted);
+}
+.display-xl {
+  font-family: var(--font-display);
+  font-weight: 800;
+  line-height: 0.92;
+  letter-spacing: -0.02em;
+  font-stretch: 125%;
+}
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* --- Section number marker (real sequence: a guided narrative) --- */
+.section-index {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--cobalt);
+}
+
+/* Hairline that reads as a road-marking, used sparingly. */
+.rule {
+  height: 1px;
+  background: var(--line);
+}
+
+/* Form field — shared by the report form. */
+.field {
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--ink);
+}
+.field::placeholder {
+  color: var(--ink-faint);
+}
+.field:focus {
+  outline: none;
+  border-color: var(--cobalt);
+  background: var(--surface);
+}
+
+/* Entrance reveal — CSS-driven so content is never JS-dependent to appear.
+   prefers-reduced-motion (below) collapses the duration, showing it instantly. */
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.reveal {
+  animation: reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* When the role switches, the whole pane re-enters — unmistakable feedback. */
+@keyframes pane-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.role-pane {
+  animation: pane-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* One orchestrated motion moment: the hero map breathes slowly. */
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.015);
+  }
+}
+.hero-breathe {
+  transform-origin: 78% 22%;
+  animation: breathe 9s ease-in-out infinite;
+}
+
+/* Pulsing rings on top hotspots in the hero map. */
+@keyframes city-pulse {
+  0% {
+    r: 5;
+    opacity: 0.85;
+    stroke-width: 2;
+  }
+  70%,
+  100% {
+    r: 18;
+    opacity: 0;
+    stroke-width: 0.5;
+  }
+}
+.city-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: city-pulse 2.6s ease-out infinite;
+}
+
+/* HTML marker pulse rings — transparent, red border only. */
+@keyframes city-marker-pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0.75;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.9);
+    opacity: 0;
+  }
+}
+.city-marker-pulse {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border-radius: 9999px;
+  border: 2px solid #ea4335;
+  background: transparent;
+  pointer-events: none;
+  animation: city-marker-pulse 2.4s ease-out infinite;
+}
+
+.map-vehicle {
+  transition: transform 0.2s linear;
+  will-change: transform;
+}
+
+/* Hero map — cinematic deck.gl preview */
+@keyframes hero-map-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.hero-map-loader {
+  animation: hero-map-spin 0.9s linear infinite;
+}
+@keyframes hero-map-shimmer {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.hero-map-frame {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 69, 200, 0.55),
+    rgba(234, 67, 53, 0.35),
+    rgba(30, 69, 200, 0.55)
+  );
+  background-size: 200% 200%;
+  animation: hero-map-shimmer 4s ease-in-out infinite;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  padding: 1px;
+}
+@keyframes hero-map-scan {
+  0% {
+    transform: translateY(-120%);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.35;
+  }
+  45% {
+    opacity: 0.12;
+  }
+  100% {
+    transform: translateY(120%);
+    opacity: 0;
+  }
+}
+.hero-map-scan::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 38%;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(96, 165, 250, 0.14),
+    transparent
+  );
+  animation: hero-map-scan 5.5s ease-in-out infinite;
+}
+
+/* The MapLibre attribution + canvas live on asphalt; tame default chrome. */
+.maplibregl-ctrl-attrib {
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+.maplibregl-ctrl-attrib.maplibregl-compact {
+  background: rgba(15, 22, 34, 0.7);
+}
+.maplibregl-ctrl-attrib a {
+  color: #9fb0c4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

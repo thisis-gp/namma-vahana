@@ -1,8 +1,8 @@
-# 🅿️ ParkPulse — Parking-Congestion Intelligence for Bengaluru Traffic Police
+# Namma Vahana — Smart Parking for Namma Bengaluru
 
 **Flipkart Gridlock 2.0 · Round 2 Prototype · Problem Statement PS1 (Parking-Induced Congestion)**
 
-> Today BTP enforcement is reactive patrol on yesterday's map. **ParkPulse** detects illegal-parking
+> Today BTP enforcement is reactive patrol on yesterday's map. **Namma Vahana** (*our ride, our roads*) detects illegal-parking
 > hotspots, scores each by its **Congestion Impact (proxy)**, forecasts the next shift's hotspots, and
 > hands officers an **optimized, exportable patrol roster** they can act on in the morning.
 

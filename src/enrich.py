@@ -93,7 +93,8 @@ def run():
 
     # merge everything onto the cis/hotspot base
     h = (cis.merge(hs[["h3", "violation_count", "confirmed_count", "junction_name",
-                       "police_station", "dominant_vehicle", "dominant_violation"]], on="h3")
+                       "display_location", "police_station", "dominant_vehicle",
+                       "dominant_violation"]], on="h3")
          .merge(cell, on="h3").merge(lq, on="h3"))
     h = h.rename(columns={"police_station": "dominant_station"})
 

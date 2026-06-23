@@ -11,12 +11,28 @@ def _mode(s):
     return m.iat[0] if not m.empty else "Unknown"
 
 
+def _display_location(s):
+    m = s.dropna().astype(str).str.strip()
+    m = m[m.ne("")]
+    if m.empty:
+        return ""
+    raw = m.mode().iat[0]
+    parts = [
+        p.strip() for p in raw.split(",")
+        if p.strip()
+        and "pin-" not in p.lower()
+        and p.strip().lower() not in {"india", "karnataka", "bengaluru"}
+    ]
+    return ", ".join(parts[:3]) if parts else raw
+
+
 def run() -> pd.DataFrame:
     df = pd.read_parquet(INTERIM / "clean.parquet")
     agg = df.groupby("h3").agg(
         violation_count=("id", "count"),
         confirmed_count=("confirmed", "sum"),
         junction_name=("junction_name", _mode),
+        display_location=("location", _display_location),
         police_station=("police_station", _mode),
         dominant_vehicle=("vehicle_type", _mode),
     ).reset_index()

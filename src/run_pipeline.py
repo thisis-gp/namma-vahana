@@ -1,5 +1,5 @@
 from src import (etl, hotspots, scoring, lq, enrich, forecast, nb_forecast,
-                 optimizer, backtest, watchlist, kpis)
+                 optimizer, backtest, watchlist, kpis, db_export)
 
 if __name__ == "__main__":
     etl.run()
@@ -14,4 +14,5 @@ if __name__ == "__main__":
     backtest.run()
     watchlist.run()
     kpis.run()
-    print("\nPipeline complete. artifacts/ refreshed.")
+    db_export.run()
+    print("\nPipeline complete. artifacts/ and SQLite DB refreshed.")

@@ -1,8 +1,39 @@
+# Data & databases (regenerate locally)
 data/
 *.csv
+*.db
+
+# Python
 __pycache__/
 *.pyc
 .venv/
 .venv_test/
 .ipynb_checkpoints/
-.streamlit/secrets.toml
+.pytest_cache/
+
+# Logs & scratch
+*.log
+_shot.py
+_ui_landing.png
+_st_err.log
+_st_out.log
+backend_api.err.log
+backend_api.out.log
+
+# Node / Next.js
+web/node_modules/
+web/.next/
+web/out/
+
+# IDE / local tooling
+.cursor/
+.claude/
+*.local.json
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Env secrets
+.env
+.env.*
