@@ -9,6 +9,24 @@ export interface ApiState<T> {
   error: string | null;
 }
 
+const RETRY_ATTEMPTS = 5;
+const RETRY_DELAY_MS = 2_000;
+
+async function fetchWithRetry<T>(fetcher: () => Promise<T>): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < RETRY_ATTEMPTS; attempt++) {
+    try {
+      return await fetcher();
+    } catch (error) {
+      lastError = error;
+      if (attempt < RETRY_ATTEMPTS - 1) {
+        await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+      }
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error("Request failed");
+}
+
 // Fetch once on mount. Each section owns its request so one failed
 // endpoint never blanks the whole page.
 export function useApi<T>(
@@ -16,26 +34,39 @@ export function useApi<T>(
   deps: ReadonlyArray<unknown> = [],
   cacheKey?: string,
 ): ApiState<T> {
-  const cached = cacheKey ? peekHeroCache<T>(cacheKey) : null;
-  const [state, setState] = useState<ApiState<T>>({
-    data: cached,
-    loading: !cached,
-    error: null,
+  const [state, setState] = useState<ApiState<T>>(() => {
+    const cached = cacheKey ? peekHeroCache<T>(cacheKey) : null;
+    return {
+      data: cached,
+      loading: !cached,
+      error: null,
+    };
   });
 
   useEffect(() => {
     let alive = true;
+
+    const cached = cacheKey ? peekHeroCache<T>(cacheKey) : null;
     if (cached) {
-      // Refresh in background without blocking UI.
-      fetcher()
+      setState({ data: cached, loading: false, error: null });
+      fetchWithRetry(fetcher)
         .then((data) => alive && setState({ data, loading: false, error: null }))
-        .catch(() => alive && setState((s) => ({ ...s, loading: false })));
+        .catch(
+          (e: unknown) =>
+            alive &&
+            setState((s) => ({
+              ...s,
+              loading: false,
+              error: e instanceof Error ? e.message : "Request failed",
+            })),
+        );
       return () => {
         alive = false;
       };
     }
+
     setState({ data: null, loading: true, error: null });
-    fetcher()
+    fetchWithRetry(fetcher)
       .then((data) => alive && setState({ data, loading: false, error: null }))
       .catch(
         (e: unknown) =>
@@ -46,6 +77,7 @@ export function useApi<T>(
             error: e instanceof Error ? e.message : "Request failed",
           }),
       );
+
     return () => {
       alive = false;
     };

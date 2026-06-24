@@ -299,10 +299,10 @@ export default function CityMap() {
             </p>
           </div>
         ) : failed ? (
-          <div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center">
-            <p className="text-sm text-[#cdd6e2]">Map unavailable</p>
-            <p className="font-mono text-[0.65rem] text-[#7e8aa0]">
-              Run <code className="text-cobalt">.\run.ps1 backend</code>
+          <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
+            <p className="text-sm text-ink-muted">Map data unavailable</p>
+            <p className="font-mono text-[0.65rem] text-ink-faint">
+              Backend may be waking up — retrying…
             </p>
           </div>
         ) : model && spotlight ? (

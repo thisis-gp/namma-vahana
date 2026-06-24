@@ -2,6 +2,7 @@
 data/
 *.csv
 *.db
+!backend/deploy/parkpulse.db
 
 # Pipeline / local caches
 cache/

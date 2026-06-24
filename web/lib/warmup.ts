@@ -62,6 +62,11 @@ async function pingHealth(): Promise<boolean> {
   }
 }
 
+async function pingReady(): Promise<boolean> {
+  const [health, kpis] = await Promise.all([pingHealth(), pingKpis()]);
+  return health && kpis;
+}
+
 export function isBackendRecentlyWarm(): boolean {
   if (typeof window === "undefined") return false;
   const cached = sessionStorage.getItem(WARM_SESSION_KEY);
@@ -73,10 +78,33 @@ export function markBackendWarm() {
   sessionStorage.setItem(WARM_SESSION_KEY, String(Date.now()));
 }
 
+export function clearBackendWarm() {
+  sessionStorage.removeItem(WARM_SESSION_KEY);
+}
+
+async function pingKpis(): Promise<boolean> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  try {
+    const res = await fetch("/api/kpis", {
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+      signal: controller.signal,
+    });
+    if (!res.ok) return false;
+    const data = (await res.json()) as { total_violations?: number };
+    return Number.isFinite(data.total_violations) && data.total_violations! > 0;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 /** Fast path — skip splash when local backend responds immediately. */
 export async function quickPing(): Promise<{ ok: boolean; ms: number }> {
   const start = performance.now();
-  const ok = await pingHealth();
+  const ok = await pingReady();
   return { ok, ms: performance.now() - start };
 }
 
@@ -157,7 +185,7 @@ export async function warmBackend(
 
   while (Date.now() - start < MAX_WAIT_MS) {
     emit(false);
-    if (await pingHealth()) {
+    if (await pingReady()) {
       if (!prefetchStarted) {
         prefetchStarted = true;
         onUpdate?.({

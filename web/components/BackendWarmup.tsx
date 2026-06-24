@@ -4,9 +4,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { LogoMark } from "@/components/brand/Logo";
 import { BRAND } from "@/lib/brand";
-import { prefetchHeroBundle } from "@/lib/hero-cache";
+import { hasHeroCache, prefetchHeroBundle } from "@/lib/hero-cache";
 import {
   WARM_SESSION_KEY,
+  clearBackendWarm,
   isBackendRecentlyWarm,
   isWarmupPreview,
   markBackendWarm,
@@ -22,7 +23,6 @@ export default function BackendWarmup({
 }: {
   children: React.ReactNode;
 }) {
-  const [gateOpen, setGateOpen] = useState(false);
   const [visible, setVisible] = useState(false);
   const [exiting, setExiting] = useState(false);
   const [message, setMessage] = useState("Connecting…");
@@ -32,18 +32,14 @@ export default function BackendWarmup({
   useEffect(() => {
     let cancelled = false;
 
-    const openGate = async () => {
-      await new Promise((r) => setTimeout(r, minSplashMs()));
-      if (!cancelled) setGateOpen(true);
-    };
-
-    const finish = async (ok: boolean) => {
+    const hideOverlay = async (markWarm: boolean) => {
       if (cancelled) return;
-      if (ok) markBackendWarm();
+      if (markWarm && hasHeroCache()) markBackendWarm();
+      else clearBackendWarm();
       setProgress(100);
       setMessage("Ready");
       setExiting(true);
-      await openGate();
+      await new Promise((r) => setTimeout(r, minSplashMs()));
       window.setTimeout(() => {
         if (!cancelled) setVisible(false);
       }, 350);
@@ -59,38 +55,39 @@ export default function BackendWarmup({
           setProgress(update.progress);
         });
         if (!cancelled) {
-          await openGate();
+          setExiting(true);
           setVisible(false);
         }
         return;
       }
 
       const recent = isBackendRecentlyWarm();
-      if (!recent) setVisible(true);
+      if (recent && hasHeroCache()) {
+        void prefetchHeroBundle(8_000);
+        return;
+      }
 
       const quick = await quickPing();
       if (cancelled) return;
 
       if (!shouldShowWarmupSplash(recent, quick)) {
-        if (quick.ok) {
-          const ready = await prefetchHeroBundle();
-          if (ready) markBackendWarm();
-        }
-        if (!cancelled) setGateOpen(true);
+        const ready = await prefetchHeroBundle(12_000);
+        if (ready) markBackendWarm();
+        else clearBackendWarm();
         return;
       }
 
       setVisible(true);
+      const continueTimer = window.setTimeout(() => setShowContinue(true), 45_000);
 
       if (quick.ok) {
         setMessage("Loading data…");
         setProgress(72);
         const ready = await prefetchHeroBundle();
-        await finish(ready);
+        window.clearTimeout(continueTimer);
+        await hideOverlay(ready);
         return;
       }
-
-      const continueTimer = window.setTimeout(() => setShowContinue(true), 60_000);
 
       const ok = await warmBackend((update) => {
         if (cancelled) return;
@@ -99,12 +96,7 @@ export default function BackendWarmup({
       });
 
       window.clearTimeout(continueTimer);
-      if (ok) {
-        await finish(true);
-      } else {
-        await openGate();
-        setVisible(false);
-      }
+      await hideOverlay(ok && hasHeroCache());
     };
 
     void run();
@@ -116,7 +108,7 @@ export default function BackendWarmup({
 
   return (
     <>
-      {gateOpen ? children : null}
+      {children}
       <AnimatePresence>
         {visible ? (
           <motion.div
@@ -170,11 +162,10 @@ export default function BackendWarmup({
                   className="mt-8 text-sm text-ink-faint underline-offset-4 transition hover:text-ink hover:underline"
                   onClick={() => {
                     setExiting(true);
-                    setGateOpen(true);
-                    window.setTimeout(() => setVisible(false), 350);
+                    setVisible(false);
                   }}
                 >
-                  Continue
+                  Continue anyway
                 </button>
               ) : (
                 <p className="mt-8 text-xs text-ink-faint">
