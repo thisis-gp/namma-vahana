@@ -48,7 +48,8 @@ export const metadata: Metadata = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  await kickBackendWake();
+  // Fire-and-forget — don't block SSR or wake Render before the client splash shows.
+  void kickBackendWake();
 
   return (
     <html

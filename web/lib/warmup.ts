@@ -2,7 +2,7 @@ const WARM_TTL_MS = 10 * 60 * 1000;
 const MAX_WAIT_MS = 90_000;
 const RETRY_MS = 3_000;
 const FETCH_TIMEOUT_MS = 20_000;
-const FAST_OK_MS = 700;
+const MIN_SPLASH_MS = 1_200;
 
 export const WARM_SESSION_KEY = "namma-vahana-backend-warm";
 
@@ -82,9 +82,20 @@ export async function quickPing(): Promise<{ ok: boolean; ms: number }> {
 
 export function shouldShowWarmupSplash(recentlyWarm: boolean, quick: { ok: boolean; ms: number }) {
   if (isWarmupPreview()) return true;
+  // Skip only on repeat visits in the same session when backend already responded.
   if (recentlyWarm && quick.ok) return false;
-  if (quick.ok && quick.ms <= FAST_OK_MS) return false;
+  // Local dev: skip when backend is already up (no Render cold start).
+  if (typeof window !== "undefined" && isLocalDev() && quick.ok) return false;
   return true;
+}
+
+function isLocalDev() {
+  const host = window.location.hostname;
+  return host === "localhost" || host === "127.0.0.1";
+}
+
+export function minSplashMs() {
+  return MIN_SPLASH_MS;
 }
 
 export function isWarmupPreview(): boolean {
@@ -130,6 +141,7 @@ export async function warmBackend(
   onUpdate?: (update: WarmupUpdate) => void,
 ): Promise<boolean> {
   const start = Date.now();
+  let prefetchStarted = false;
 
   const emit = (ready = false) => {
     const elapsed = Date.now() - start;
@@ -146,6 +158,16 @@ export async function warmBackend(
   while (Date.now() - start < MAX_WAIT_MS) {
     emit(false);
     if (await pingHealth()) {
+      if (!prefetchStarted) {
+        prefetchStarted = true;
+        onUpdate?.({
+          message: "Loading data…",
+          progress: Math.max(70, progressForElapsed(Date.now() - start, false)),
+          step: 1,
+        });
+        const { prefetchHeroBundle } = await import("./hero-cache");
+        await prefetchHeroBundle();
+      }
       emit(true);
       return true;
     }

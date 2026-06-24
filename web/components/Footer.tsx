@@ -1,6 +1,7 @@
 "use client";
 
 import { api } from "@/lib/api";
+import { HERO_CACHE_KEYS } from "@/lib/hero-cache";
 import { useApi } from "@/lib/useApi";
 import { useRole } from "@/lib/role";
 import { fmt } from "@/lib/format";
@@ -8,7 +9,7 @@ import Logo from "@/components/brand/Logo";
 import { BRAND } from "@/lib/brand";
 
 export default function Footer() {
-  const { data: k } = useApi(api.kpis);
+  const { data: k } = useApi(api.kpis, [], HERO_CACHE_KEYS.kpis);
   const { isOfficer } = useRole();
 
   return (

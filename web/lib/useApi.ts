@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { peekHeroCache } from "./hero-cache";
 
 export interface ApiState<T> {
   data: T | null;
@@ -13,16 +14,27 @@ export interface ApiState<T> {
 export function useApi<T>(
   fetcher: () => Promise<T>,
   deps: ReadonlyArray<unknown> = [],
+  cacheKey?: string,
 ): ApiState<T> {
+  const cached = cacheKey ? peekHeroCache<T>(cacheKey) : null;
   const [state, setState] = useState<ApiState<T>>({
-    data: null,
-    loading: true,
+    data: cached,
+    loading: !cached,
     error: null,
   });
 
   useEffect(() => {
     let alive = true;
-    setState((s) => ({ ...s, loading: true, error: null }));
+    if (cached) {
+      // Refresh in background without blocking UI.
+      fetcher()
+        .then((data) => alive && setState({ data, loading: false, error: null }))
+        .catch(() => alive && setState((s) => ({ ...s, loading: false })));
+      return () => {
+        alive = false;
+      };
+    }
+    setState({ data: null, loading: true, error: null });
     fetcher()
       .then((data) => alive && setState({ data, loading: false, error: null }))
       .catch(

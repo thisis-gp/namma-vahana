@@ -1,11 +1,12 @@
 "use client";
 
 import { api } from "@/lib/api";
+import { HERO_CACHE_KEYS } from "@/lib/hero-cache";
 import { useApi } from "@/lib/useApi";
 import { fmt } from "@/lib/format";
 
 export default function ActivityTicker() {
-  const k = useApi(api.kpis);
+  const k = useApi(api.kpis, [], HERO_CACHE_KEYS.kpis);
   const reports = useApi(() => api.reports(), []);
   const challans = useApi(() => api.challans(), []);
 

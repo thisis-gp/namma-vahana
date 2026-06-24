@@ -4,11 +4,13 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { LogoMark } from "@/components/brand/Logo";
 import { BRAND } from "@/lib/brand";
+import { prefetchHeroBundle } from "@/lib/hero-cache";
 import {
   WARM_SESSION_KEY,
   isBackendRecentlyWarm,
   isWarmupPreview,
   markBackendWarm,
+  minSplashMs,
   quickPing,
   shouldShowWarmupSplash,
   simulateWarmupDemo,
@@ -20,6 +22,7 @@ export default function BackendWarmup({
 }: {
   children: React.ReactNode;
 }) {
+  const [gateOpen, setGateOpen] = useState(false);
   const [visible, setVisible] = useState(false);
   const [exiting, setExiting] = useState(false);
   const [message, setMessage] = useState("Connecting…");
@@ -29,15 +32,21 @@ export default function BackendWarmup({
   useEffect(() => {
     let cancelled = false;
 
-    const finish = (ok: boolean) => {
+    const openGate = async () => {
+      await new Promise((r) => setTimeout(r, minSplashMs()));
+      if (!cancelled) setGateOpen(true);
+    };
+
+    const finish = async (ok: boolean) => {
       if (cancelled) return;
       if (ok) markBackendWarm();
       setProgress(100);
       setMessage("Ready");
       setExiting(true);
+      await openGate();
       window.setTimeout(() => {
         if (!cancelled) setVisible(false);
-      }, 400);
+      }, 350);
     };
 
     const run = async () => {
@@ -49,23 +58,35 @@ export default function BackendWarmup({
           setMessage(update.message);
           setProgress(update.progress);
         });
-        if (!cancelled) finish(true);
+        if (!cancelled) {
+          await openGate();
+          setVisible(false);
+        }
         return;
       }
 
       const recent = isBackendRecentlyWarm();
+      if (!recent) setVisible(true);
+
       const quick = await quickPing();
       if (cancelled) return;
 
       if (!shouldShowWarmupSplash(recent, quick)) {
-        if (quick.ok) markBackendWarm();
+        if (quick.ok) {
+          markBackendWarm();
+          await prefetchHeroBundle();
+        }
+        if (!cancelled) setGateOpen(true);
         return;
       }
 
       setVisible(true);
 
       if (quick.ok) {
-        finish(true);
+        setMessage("Loading data…");
+        setProgress(72);
+        await prefetchHeroBundle();
+        await finish(true);
         return;
       }
 
@@ -78,7 +99,12 @@ export default function BackendWarmup({
       });
 
       window.clearTimeout(continueTimer);
-      finish(ok);
+      if (ok) {
+        await finish(true);
+      } else {
+        await openGate();
+        setVisible(false);
+      }
     };
 
     void run();
@@ -90,7 +116,7 @@ export default function BackendWarmup({
 
   return (
     <>
-      {children}
+      {gateOpen ? children : null}
       <AnimatePresence>
         {visible ? (
           <motion.div
@@ -144,6 +170,7 @@ export default function BackendWarmup({
                   className="mt-8 text-sm text-ink-faint underline-offset-4 transition hover:text-ink hover:underline"
                   onClick={() => {
                     setExiting(true);
+                    setGateOpen(true);
                     window.setTimeout(() => setVisible(false), 350);
                   }}
                 >

@@ -1,11 +1,12 @@
 "use client";
 
 import { api } from "@/lib/api";
+import { HERO_CACHE_KEYS } from "@/lib/hero-cache";
 import { useApi } from "@/lib/useApi";
 import { compact, fmt, pct } from "@/lib/format";
 
 export default function LandingStats() {
-  const { data: k } = useApi(api.kpis);
+  const { data: k } = useApi(api.kpis, [], HERO_CACHE_KEYS.kpis);
 
   return (
     <section className="border-b border-line bg-ground">

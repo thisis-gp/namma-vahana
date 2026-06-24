@@ -6,6 +6,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import { fmt } from "@/lib/format";
+import { HERO_CACHE_KEYS } from "@/lib/hero-cache";
 import { useApi } from "@/lib/useApi";
 import {
   PATROL_ORIGIN,
@@ -83,8 +84,8 @@ export default function CityMap() {
   const [routeStatus, setRouteStatus] = useState("Routing");
   const [searchOpen, setSearchOpen] = useState(false);
 
-  const hotspots = useApi(() => api.hotspots(undefined, 50), []);
-  const parking = useApi(() => api.parking({ limit: 12 }), []);
+  const hotspots = useApi(() => api.hotspots(undefined, 20), [], HERO_CACHE_KEYS.hotspots);
+  const parking = useApi(() => api.parking({ limit: 12 }), [], HERO_CACHE_KEYS.parking);
 
   const model = useMemo(() => {
     const hs = hotspots.data ?? [];
@@ -157,7 +158,6 @@ export default function CityMap() {
         );
         url.searchParams.set("overview", "full");
         url.searchParams.set("geometries", "geojson");
-        url.searchParams.set("steps", "true");
         const res = await fetch(url, { signal: controller.signal });
         if (!res.ok) throw new Error(`OSRM ${res.status}`);
         const json = await res.json();
