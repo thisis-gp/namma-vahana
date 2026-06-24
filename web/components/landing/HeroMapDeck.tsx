@@ -2,9 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import DeckGL from "@deck.gl/react";
-import { HeatmapLayer } from "@deck.gl/aggregation-layers";
-import { H3HexagonLayer, TripsLayer } from "@deck.gl/geo-layers";
-import { ArcLayer, ColumnLayer, ScatterplotLayer } from "@deck.gl/layers";
+import { TripsLayer } from "@deck.gl/geo-layers";
+import {
+  IconLayer,
+  LineLayer,
+  ScatterplotLayer,
+  TextLayer,
+} from "@deck.gl/layers";
 import { FlyToInterpolator } from "@deck.gl/core";
 import type { MapViewState } from "@deck.gl/core";
 import { Map } from "react-map-gl/maplibre";
@@ -13,55 +17,97 @@ import { heatColor } from "@/components/map/heat";
 import {
   PATROL_ORIGIN,
   TRIP_MS,
-  buildTrip,
+  buildTripFromPath,
+  distanceKm,
   tripHead,
   type HeroParking,
   type HeroPin,
 } from "./heroMapUtils";
 
-const MAP_STYLE =
-  "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
+const MAP_STYLE = "https://tiles.openfreemap.org/styles/liberty";
 
-const BASE_VIEW: MapViewState = {
-  longitude: 77.5946,
-  latitude: 12.9716,
-  zoom: 10.9,
-  pitch: 38,
-  bearing: -12,
-  minZoom: 9,
-  maxZoom: 14,
-};
+const CAR_ICON =
+  "data:image/svg+xml;charset=utf-8," +
+  encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+      <filter id="s" x="-30%" y="-30%" width="160%" height="160%">
+        <feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#14181f" flood-opacity=".28"/>
+      </filter>
+      <g filter="url(#s)" transform="rotate(28 32 32)">
+        <rect x="15" y="9" width="34" height="46" rx="9" fill="#fff"/>
+        <path d="M20 24h24l-4-10H24z" fill="#9ec5ff"/>
+        <path d="M20 39h24l-3 10H23z" fill="#dfe8f7"/>
+        <rect x="12" y="23" width="5" height="12" rx="2" fill="#1e45c8"/>
+        <rect x="47" y="23" width="5" height="12" rx="2" fill="#1e45c8"/>
+        <circle cx="24" cy="54" r="3" fill="#14181f"/>
+        <circle cx="40" cy="54" r="3" fill="#14181f"/>
+        <rect x="27" y="29" width="10" height="4" rx="2" fill="#1e45c8"/>
+      </g>
+    </svg>
+  `);
 
-function radarAlpha(pulse: number, phase: number) {
-  const wave = (pulse + phase) % 1;
-  return Math.round(90 * (1 - wave));
+function sceneOpacity(activeScene: number, target: number, strength = 1) {
+  return activeScene === target ? strength : strength * 0.35;
 }
 
 export default function HeroMapDeck({
   hotspots,
   parking,
   spotlight,
+  destination,
+  routePath,
   maxPriority,
   reduceMotion,
+  activeScene,
 }: {
   hotspots: HeroPin[];
   parking: HeroParking[];
   spotlight: HeroPin;
+  destination: { name: string; lat: number; lon: number };
+  routePath: [number, number][];
   maxPriority: number;
   reduceMotion: boolean | null;
+  activeScene: number;
 }) {
   const [viewState, setViewState] = useState<MapViewState>({
-    ...BASE_VIEW,
-    longitude: spotlight.lon,
-    latitude: spotlight.lat,
-    zoom: 11.05,
+    longitude: destination.lon,
+    latitude: destination.lat - 0.012,
+    zoom: 12.35,
+    pitch: 0,
+    bearing: 0,
+    minZoom: 10.5,
+    maxZoom: 14,
   });
   const [time, setTime] = useState(0);
   const [pulse, setPulse] = useState(0);
 
+  const localRoute = useMemo<[number, number][]>(() => {
+    if (routePath.length > 1) {
+      const clipped: [number, number][] = [[PATROL_ORIGIN[0], PATROL_ORIGIN[1]]];
+      for (const point of routePath) {
+        if (distanceKm(destination, { lon: point[0], lat: point[1] }) <= 8) {
+          clipped.push(point);
+        }
+      }
+      if (clipped.length > 1) return clipped;
+    }
+    return [
+      PATROL_ORIGIN,
+      [
+        PATROL_ORIGIN[0] + (destination.lon - PATROL_ORIGIN[0]) * 0.35,
+        PATROL_ORIGIN[1] + (destination.lat - PATROL_ORIGIN[1]) * 0.35,
+      ],
+      [
+        PATROL_ORIGIN[0] + (destination.lon - PATROL_ORIGIN[0]) * 0.72,
+        PATROL_ORIGIN[1] + (destination.lat - PATROL_ORIGIN[1]) * 0.72,
+      ],
+      [destination.lon, destination.lat],
+    ];
+  }, [routePath, destination]);
+
   const trip = useMemo(
-    () => buildTrip(PATROL_ORIGIN, [spotlight.lon, spotlight.lat]),
-    [spotlight.lon, spotlight.lat],
+    () => buildTripFromPath(localRoute, TRIP_MS),
+    [localRoute],
   );
 
   const patrolPos = useMemo(
@@ -70,17 +116,20 @@ export default function HeroMapDeck({
   );
 
   useEffect(() => {
-    setViewState((vs) => ({
-      ...vs,
-      longitude: spotlight.lon,
-      latitude: spotlight.lat,
-      zoom: 11.05,
-      pitch: 42,
-      bearing: -8 + spotlight.rank * 3,
-      transitionDuration: reduceMotion ? 0 : 2400,
-      transitionInterpolator: new FlyToInterpolator(),
-    }));
-  }, [spotlight.lon, spotlight.lat, spotlight.rank, reduceMotion]);
+    const id = window.setTimeout(() => {
+      setViewState((vs) => ({
+        ...vs,
+        longitude: destination.lon,
+        latitude: destination.lat - 0.014,
+        zoom: 12.45,
+        pitch: 0,
+        bearing: 0,
+        transitionDuration: reduceMotion ? 0 : 1600,
+        transitionInterpolator: new FlyToInterpolator(),
+      }));
+    }, 0);
+    return () => window.clearTimeout(id);
+  }, [destination.lon, destination.lat, reduceMotion]);
 
   useEffect(() => {
     if (reduceMotion) return;
@@ -94,48 +143,67 @@ export default function HeroMapDeck({
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [spotlight.rank, reduceMotion]);
+  }, [destination.lon, destination.lat, reduceMotion]);
 
   const layers = useMemo(() => {
-    const heatPulse = 1.2 + Math.sin(pulse * Math.PI * 2) * 0.25;
+    const detectAlpha = Math.round(55 + sceneOpacity(activeScene, 0, 40));
+    const patrolAlpha = Math.round(120 + sceneOpacity(activeScene, 2, 115));
+    const guideAlpha = Math.round(140 + sceneOpacity(activeScene, 1, 100));
 
-    const heat = new HeatmapLayer<HeroPin>({
-      id: "hero-heat",
-      data: hotspots,
+    const heat = new ScatterplotLayer<HeroPin>({
+      id: "hero-heat-blobs",
+      data: hotspots.slice(0, 10),
       getPosition: (d) => [d.lon, d.lat],
-      getWeight: (d) => Math.sqrt(d.violations),
-      radiusPixels: 58,
-      intensity: heatPulse,
-      threshold: 0.03,
-      colorRange: [
-        [0, 0, 0, 0],
-        [65, 182, 196, 90],
-        [253, 174, 97, 160],
-        [215, 48, 39, 220],
-        [165, 0, 38, 255],
-      ],
+      getRadius: (d) =>
+        (d.rank <= 3 ? 520 : d.rank <= 6 ? 380 : 280) +
+        Math.sin(pulse * Math.PI * 2 + d.rank) * 20,
+      getFillColor: (d) =>
+        d.rank <= 5 ? [244, 161, 0, detectAlpha] : [234, 67, 53, detectAlpha - 15],
+      stroked: false,
+      radiusUnits: "meters",
+      pickable: false,
     });
 
-    const arcGlow = new ArcLayer({
-      id: "hero-arc-glow",
-      data: [{ source: PATROL_ORIGIN, target: [spotlight.lon, spotlight.lat] }],
-      getSourcePosition: (d) => d.source,
-      getTargetPosition: (d) => d.target,
-      getSourceColor: [30, 69, 200, 40],
-      getTargetColor: [234, 67, 53, 120],
+    const spotlightRing = new ScatterplotLayer<HeroPin>({
+      id: "hero-spotlight",
+      data: [spotlight],
+      getPosition: (d) => [d.lon, d.lat],
+      getRadius: 220 + Math.sin(pulse * Math.PI * 2) * 18,
+      getFillColor: [234, 67, 53, 235],
+      getLineColor: [255, 255, 255, 255],
+      lineWidthMinPixels: 2,
+      stroked: true,
+      radiusUnits: "meters",
+    });
+
+    const patrolLineGlow = new LineLayer({
+      id: "hero-patrol-route-glow",
+      data: localRoute.slice(1).map((point, i) => ({
+        from: localRoute[i],
+        to: point,
+      })),
+      getSourcePosition: (d) => d.from,
+      getTargetPosition: (d) => d.to,
+      getColor: [30, 101, 230, Math.round(patrolAlpha * 0.35)],
       getWidth: 8,
-      greatCircle: true,
+      widthUnits: "pixels",
+      capRounded: true,
+      jointRounded: true,
     });
 
-    const arc = new ArcLayer({
-      id: "hero-arc",
-      data: [{ source: PATROL_ORIGIN, target: [spotlight.lon, spotlight.lat] }],
-      getSourcePosition: (d) => d.source,
-      getTargetPosition: (d) => d.target,
-      getSourceColor: [96, 165, 250, 120],
-      getTargetColor: [234, 67, 53, 240],
-      getWidth: 2.5,
-      greatCircle: true,
+    const patrolLine = new LineLayer({
+      id: "hero-patrol-route",
+      data: localRoute.slice(1).map((point, i) => ({
+        from: localRoute[i],
+        to: point,
+      })),
+      getSourcePosition: (d) => d.from,
+      getTargetPosition: (d) => d.to,
+      getColor: [0, 92, 230, patrolAlpha],
+      getWidth: 3.5,
+      widthUnits: "pixels",
+      capRounded: true,
+      jointRounded: true,
     });
 
     const patrol = new TripsLayer({
@@ -143,10 +211,10 @@ export default function HeroMapDeck({
       data: [trip],
       getPath: (d) => d.path,
       getTimestamps: (d) => d.timestamps,
-      getColor: [96, 165, 250, 240],
-      getWidth: 6,
-      widthMinPixels: 4,
-      trailLength: 320,
+      getColor: [0, 92, 230, patrolAlpha],
+      getWidth: 4,
+      widthMinPixels: 2,
+      trailLength: 260,
       currentTime: time,
       fadeTrail: true,
       capRounded: true,
@@ -155,72 +223,28 @@ export default function HeroMapDeck({
 
     const dots = new ScatterplotLayer<HeroPin>({
       id: "hero-dots",
-      data: hotspots.filter((h) => h.rank !== spotlight.rank),
+      data: hotspots.filter((h) => h.rank !== spotlight.rank && h.rank <= 12),
       getPosition: (d) => [d.lon, d.lat],
-      getRadius: (d) => (d.rank <= 5 ? 300 : 200),
+      getRadius: (d) => (d.rank <= 5 ? 160 : 120),
       getFillColor: (d) => {
         const t = d.priority_pct / maxPriority;
-        return heatColor(t, 210);
+        return heatColor(t, Math.round(detectAlpha * 1.6));
       },
-      getLineColor: [255, 255, 255, 180],
-      lineWidthMinPixels: 1.5,
+      getLineColor: [255, 255, 255, 160],
+      lineWidthMinPixels: 1,
       stroked: true,
       radiusUnits: "meters",
       pickable: false,
     });
 
-    const hex = new H3HexagonLayer<HeroPin>({
-      id: "hero-hex",
-      data: [spotlight],
-      getHexagon: (d) => d.h3,
-      extruded: true,
-      elevationScale: 1,
-      coverage: 0.94,
-      getFillColor: [234, 67, 53, 175],
-      getElevation: 1800 + Math.sin(pulse * Math.PI * 2) * 220,
-      material: {
-        ambient: 0.45,
-        diffuse: 0.65,
-        shininess: 32,
-        specularColor: [255, 120, 100],
-      },
-      pickable: false,
-    });
-
-    const pillar = new ColumnLayer<HeroPin>({
-      id: "hero-pillar",
-      data: [spotlight],
+    const destinationPin = new ScatterplotLayer({
+      id: "hero-destination",
+      data: [destination],
       getPosition: (d) => [d.lon, d.lat],
-      getFillColor: [234, 67, 53, 220],
-      getElevation: 2400 + Math.sin(pulse * Math.PI * 2) * 200,
-      radius: 180,
-      elevationScale: 1,
-      extruded: true,
-      pickable: false,
-    });
-
-    const rings = [0, 0.33, 0.66].map(
-      (phase, i) =>
-        new ScatterplotLayer({
-          id: `hero-ring-${i}`,
-          data: [spotlight],
-          getPosition: (d: HeroPin) => [d.lon, d.lat],
-          getRadius: 350 + ((pulse + phase) % 1) * 900,
-          getFillColor: [234, 67, 53, radarAlpha(pulse, phase)],
-          stroked: false,
-          radiusUnits: "meters",
-          pickable: false,
-        }),
-    );
-
-    const core = new ScatterplotLayer<HeroPin>({
-      id: "hero-core",
-      data: [spotlight],
-      getPosition: (d) => [d.lon, d.lat],
-      getRadius: 380 + Math.sin(pulse * Math.PI * 2) * 50,
-      getFillColor: [255, 255, 255, 235],
-      getLineColor: [234, 67, 53, 255],
-      lineWidthMinPixels: 3,
+      getRadius: 190,
+      getFillColor: [30, 69, 200, 230],
+      getLineColor: [255, 255, 255, 240],
+      lineWidthMinPixels: 2,
       stroked: true,
       radiusUnits: "meters",
     });
@@ -229,22 +253,10 @@ export default function HeroMapDeck({
       id: "hero-depot",
       data: [{ pos: PATROL_ORIGIN }],
       getPosition: (d) => d.pos,
-      getRadius: 280,
-      getFillColor: [30, 69, 200, 200],
-      getLineColor: [255, 255, 255, 220],
-      lineWidthMinPixels: 2,
-      stroked: true,
-      radiusUnits: "meters",
-    });
-
-    const vehicle = new ScatterplotLayer({
-      id: "hero-vehicle",
-      data: [{ pos: patrolPos }],
-      getPosition: (d) => d.pos,
-      getRadius: 120,
-      getFillColor: [255, 255, 255, 255],
-      getLineColor: [30, 69, 200, 255],
-      lineWidthMinPixels: 3,
+      getRadius: 170,
+      getFillColor: [30, 69, 200, activeScene === 2 ? 200 : 120],
+      getLineColor: [255, 255, 255, 200],
+      lineWidthMinPixels: 1.5,
       stroked: true,
       radiusUnits: "meters",
     });
@@ -253,38 +265,88 @@ export default function HeroMapDeck({
       id: "hero-vehicle-glow",
       data: [{ pos: patrolPos }],
       getPosition: (d) => d.pos,
-      getRadius: 260 + Math.sin(pulse * Math.PI * 4) * 40,
-      getFillColor: [96, 165, 250, 90],
+      getRadius: 180 + Math.sin(pulse * Math.PI * 4) * 16,
+      getFillColor: [0, 92, 230, activeScene === 2 ? 90 : 45],
       stroked: false,
       radiusUnits: "meters",
+    });
+
+    const vehicle = new IconLayer({
+      id: "hero-vehicle",
+      data: [{ pos: patrolPos, size: activeScene === 2 ? 40 : 32 }],
+      iconAtlas: CAR_ICON,
+      iconMapping: {
+        car: { x: 0, y: 0, width: 64, height: 64, mask: false },
+      },
+      getIcon: () => "car",
+      getPosition: (d) => d.pos,
+      getSize: (d) => d.size,
+      sizeUnits: "pixels",
+      billboard: true,
     });
 
     const park = new ScatterplotLayer<HeroParking>({
       id: "hero-park",
       data: parking,
       getPosition: (d) => [d.lon, d.lat],
-      getRadius: 240,
-      getFillColor: [31, 138, 91, 230],
-      getLineColor: [255, 255, 255, 220],
-      lineWidthMinPixels: 2,
+      getRadius: activeScene === 1 ? 220 : 170,
+      getFillColor: [31, 138, 91, guideAlpha],
+      getLineColor: [255, 255, 255, 210],
+      lineWidthMinPixels: 1.5,
       stroked: true,
       radiusUnits: "meters",
     });
 
+    const parkingLabels = new TextLayer<HeroParking>({
+      id: "hero-park-labels",
+      data: parking,
+      getPosition: (d) => [d.lon, d.lat],
+      getText: () => "P",
+      getSize: 14,
+      getColor: [255, 255, 255, 255],
+      getTextAnchor: "middle",
+      getAlignmentBaseline: "center",
+      fontFamily: "Arial, sans-serif",
+      fontWeight: 800,
+      billboard: true,
+    });
+
+    const destinationLabel = new TextLayer({
+      id: "hero-destination-label",
+      data: [
+        {
+          pos: [destination.lon, destination.lat],
+          text: destination.name.length > 22
+            ? `${destination.name.slice(0, 20)}…`
+            : destination.name,
+        },
+      ],
+      getPosition: (d) => d.pos,
+      getText: (d) => d.text,
+      getPixelOffset: [0, -30],
+      getSize: 11,
+      getColor: [20, 24, 31, 235],
+      getTextAnchor: "middle",
+      getAlignmentBaseline: "bottom",
+      fontFamily: "Arial, sans-serif",
+      fontWeight: 700,
+      billboard: true,
+    });
+
     return [
       heat,
-      arcGlow,
-      arc,
-      patrol,
       dots,
-      hex,
-      pillar,
-      ...rings,
-      core,
+      patrolLineGlow,
+      patrolLine,
+      patrol,
+      spotlightRing,
+      destinationPin,
+      destinationLabel,
       depot,
+      park,
+      parkingLabels,
       vehicleGlow,
       vehicle,
-      park,
     ];
   }, [
     hotspots,
@@ -294,7 +356,10 @@ export default function HeroMapDeck({
     pulse,
     maxPriority,
     parking,
+    activeScene,
+    localRoute,
     patrolPos,
+    destination,
   ]);
 
   return (

@@ -10,6 +10,6 @@ __pycache__/
 .claude/
 flipkart-gridlock/
 artifacts/_backtest_panel.parquet
-web/node_modules/
-web/.next/
+web/
+requirements.txt
 *.log

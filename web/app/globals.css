@@ -287,6 +287,18 @@ body {
     opacity: 0;
   }
 }
+@keyframes warmup-slide {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(320%);
+  }
+}
+
+.warmup-minimal {
+  background: var(--ground);
+}
 .hero-map-scan::after {
   content: "";
   position: absolute;

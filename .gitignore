@@ -40,3 +40,9 @@ Thumbs.db
 # Env secrets
 .env
 .env.*
+
+# Local screenshots / review captures
+artifacts/*.png
+artifacts/hero-review/
+
+.vercel

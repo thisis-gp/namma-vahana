@@ -1,9 +1,17 @@
 import type { NextConfig } from "next";
 
+const API_ORIGIN = process.env.API_URL ?? "http://127.0.0.1:8000";
+
 const nextConfig: NextConfig = {
-  // The backend serves on 127.0.0.1 and the app on localhost — allow both
-  // hosts to reach dev resources so HMR/hydration works either way.
   allowedDevOrigins: ["127.0.0.1", "localhost"],
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${API_ORIGIN}/api/:path*`,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

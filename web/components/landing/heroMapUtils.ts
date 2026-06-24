@@ -42,6 +42,17 @@ export function buildTrip(
 
 export type HeroTrip = ReturnType<typeof buildTrip>;
 
+export function buildTripFromPath(
+  path: [number, number][],
+  durationMs = TRIP_MS,
+) {
+  if (path.length < 2) return buildTrip(PATROL_ORIGIN, PATROL_ORIGIN, durationMs);
+  const timestamps = path.map((_, i) =>
+    path.length === 1 ? 0 : (durationMs / (path.length - 1)) * i,
+  );
+  return { path, timestamps, duration: durationMs };
+}
+
 export function tripHead(trip: HeroTrip, timeMs: number): [number, number] {
   const t = timeMs % trip.duration;
   let i = 1;
@@ -63,12 +74,24 @@ function dist2(
   return dlat * dlat + dlon * dlon;
 }
 
+/** Rough km distance for hero map filtering. */
+export function distanceKm(
+  a: { lat: number; lon: number },
+  b: { lat: number; lon: number },
+) {
+  const dx = (a.lon - b.lon) * 85;
+  const dy = (a.lat - b.lat) * 111;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
 export function nearestParking(
-  spotlight: HeroPin,
+  spotlight: { lat: number; lon: number },
   parking: HeroParking[],
   n = 2,
+  maxKm = 6,
 ): HeroParking[] {
   return [...parking]
+    .filter((p) => distanceKm(spotlight, p) <= maxKm)
     .sort((a, b) => dist2(a, spotlight) - dist2(b, spotlight))
     .slice(0, n);
 }

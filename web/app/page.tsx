@@ -17,62 +17,78 @@ export default function Landing() {
           className="relative overflow-hidden border-b border-line"
           style={{
             background:
-              "radial-gradient(120% 90% at 90% -10%, var(--cobalt-soft) 0%, var(--ground) 50%)",
+              "radial-gradient(90% 70% at 92% 8%, rgba(30,69,200,0.14) 0%, rgba(236,239,243,0) 58%), linear-gradient(180deg, #f8fbff 0%, var(--ground) 100%)",
           }}
         >
-          <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 pb-16 pt-16 sm:px-8 sm:pb-20 sm:pt-24 lg:grid-cols-[1.05fr_0.95fr]">
-            <div>
-              <p className="eyebrow reveal mb-5">
-                {BRAND.tagline} · built on real enforcement data
-              </p>
+          <div className="mx-auto grid w-full max-w-[92rem] items-center gap-10 px-5 pb-12 pt-14 sm:px-8 sm:pb-16 sm:pt-20 lg:grid-cols-[0.72fr_1.28fr] xl:gap-14">
+            <div className="relative z-10">
               <h1
-                className="font-display reveal text-4xl font-extrabold leading-[1.04] tracking-tight sm:text-6xl"
+                className="font-display reveal max-w-2xl text-4xl font-extrabold leading-[0.98] tracking-tight text-ink sm:text-6xl lg:text-[4.4rem]"
                 style={{ animationDelay: "0.08s" }}
               >
-                Park without the{" "}
-                <span className="text-cobalt">guesswork.</span> Enforce without
-                the <span className="text-cobalt">guessing.</span>
+                Parking intelligence for{" "}
+                <span className="text-cobalt">Namma Bengaluru</span>
               </h1>
               <p
                 className="reveal mt-5 max-w-xl text-lg leading-relaxed text-ink-muted"
                 style={{ animationDelay: "0.16s" }}
               >
-                One dataset of 2,98,443 parking violations, two jobs done well:
-                residents find low-risk parking and avoid fines; the traffic
-                police see where to be, when, and with whom.
+                Find safer parking, avoid fines, and help traffic police
+                prioritize patrols using real Bengaluru violation intelligence.
               </p>
+              <div
+                className="reveal mt-5 flex flex-wrap items-center gap-2 font-mono text-[0.68rem] uppercase tracking-wider text-ink-muted"
+                style={{ animationDelay: "0.2s" }}
+              >
+                <span className="rounded-full border border-line bg-white/75 px-3 py-1">
+                  {BRAND.tagline}
+                </span>
+                <span className="rounded-full border border-line bg-white/75 px-3 py-1">
+                  2,98,443 violations analyzed
+                </span>
+              </div>
 
               {/* Two doors */}
               <div
-                className="reveal mt-8 flex flex-col gap-3 sm:flex-row"
+                className="reveal mt-8 grid gap-3 sm:grid-cols-2"
                 style={{ animationDelay: "0.24s" }}
               >
                 <Link
                   href="/resident"
-                  className="group flex flex-1 items-center justify-between rounded-xl bg-cobalt px-5 py-4 text-white transition-colors hover:bg-cobalt-deep"
+                  className="group flex min-h-28 items-center justify-between rounded-xl border border-cobalt/30 bg-white px-5 py-4 shadow-[0_18px_50px_-30px_rgba(30,69,200,0.65)] transition-all hover:-translate-y-0.5 hover:border-cobalt hover:shadow-[0_24px_60px_-32px_rgba(30,69,200,0.75)]"
                 >
-                  <span>
-                    <span className="block text-base font-semibold">
-                      I’m a resident
+                  <span className="flex items-center gap-4">
+                    <span className="grid h-12 w-12 place-items-center rounded-full bg-cobalt text-lg font-bold text-white">
+                      R
                     </span>
-                    <span className="text-sm text-white/80">
-                      Find parking · avoid fines · earn green points
+                    <span>
+                      <span className="block text-base font-semibold text-ink">
+                        Resident
+                      </span>
+                      <span className="text-sm text-ink-muted">
+                        Find parking
+                      </span>
                     </span>
                   </span>
-                  <span className="text-xl transition-transform group-hover:translate-x-0.5">
+                  <span className="text-xl text-cobalt transition-transform group-hover:translate-x-0.5">
                     →
                   </span>
                 </Link>
                 <Link
                   href="/officer"
-                  className="group flex flex-1 items-center justify-between rounded-xl border border-line bg-surface px-5 py-4 transition-colors hover:border-cobalt"
+                  className="group flex min-h-28 items-center justify-between rounded-xl border border-amber/45 bg-white px-5 py-4 shadow-[0_18px_50px_-34px_rgba(244,161,0,0.7)] transition-all hover:-translate-y-0.5 hover:border-amber hover:shadow-[0_24px_60px_-34px_rgba(244,161,0,0.8)]"
                 >
-                  <span>
-                    <span className="block text-base font-semibold text-ink">
-                      I’m with the traffic police
+                  <span className="flex items-center gap-4">
+                    <span className="grid h-12 w-12 place-items-center rounded-full bg-amber text-lg font-bold text-white">
+                      P
                     </span>
-                    <span className="text-sm text-ink-muted">
-                      Hotspots · patrol plan · targets
+                    <span>
+                      <span className="block text-base font-semibold text-ink">
+                        Traffic police
+                      </span>
+                      <span className="text-sm text-ink-muted">
+                        Command map
+                      </span>
                     </span>
                   </span>
                   <span className="text-xl text-cobalt transition-transform group-hover:translate-x-0.5">
