@@ -52,6 +52,25 @@ def _insert_df(con: sqlite3.Connection, table: str, df: pd.DataFrame) -> int:
     return len(subset)
 
 
+def analytics_loaded() -> bool:
+    """True when pipeline KPIs and hotspots are present in SQLite."""
+    init_db()
+    with session() as con:
+        kp = con.execute("SELECT 1 FROM kpis WHERE id = 1").fetchone()
+        hot = con.execute("SELECT COUNT(*) FROM hotspots").fetchone()[0]
+        return kp is not None and hot > 0
+
+
+def ensure_analytics_loaded() -> None:
+    """Hydrate analytics from committed artifacts when DB is empty (e.g. Render cold deploy)."""
+    if analytics_loaded():
+        return
+    try:
+        run()
+    except FileNotFoundError:
+        pass
+
+
 def run() -> None:
     if not (ARTIFACTS / "kpis.json").exists():
         raise FileNotFoundError(

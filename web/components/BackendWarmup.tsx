@@ -73,8 +73,8 @@ export default function BackendWarmup({
 
       if (!shouldShowWarmupSplash(recent, quick)) {
         if (quick.ok) {
-          markBackendWarm();
-          await prefetchHeroBundle();
+          const ready = await prefetchHeroBundle();
+          if (ready) markBackendWarm();
         }
         if (!cancelled) setGateOpen(true);
         return;
@@ -85,8 +85,8 @@ export default function BackendWarmup({
       if (quick.ok) {
         setMessage("Loading data…");
         setProgress(72);
-        await prefetchHeroBundle();
-        await finish(true);
+        const ready = await prefetchHeroBundle();
+        await finish(ready);
         return;
       }
 

@@ -316,7 +316,14 @@ export default function CityMap() {
             reduceMotion={reduceMotion}
             activeScene={activeScene}
           />
-        ) : null}
+        ) : (
+          <div className="flex h-full flex-col items-center justify-center gap-3 bg-[#e9eef5] px-6 text-center">
+            <div className="hero-map-loader h-10 w-10 rounded-full border-2 border-cobalt/30 border-t-cobalt" />
+            <p className="font-mono text-[0.65rem] uppercase tracking-widest text-ink-muted">
+              Loading enforcement data
+            </p>
+          </div>
+        )}
 
         {/* Scan sweep */}
         {!reduceMotion && model ? (

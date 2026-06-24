@@ -37,6 +37,10 @@ def client(tmp_path, monkeypatch):
                 "date_max": "2024-04-08",
             })],
         )
+        con.execute(
+            "INSERT OR REPLACE INTO hotspots (h3, lat, lon, rank) VALUES (?, ?, ?, ?)",
+            ("test-h3", 12.97, 77.59, 1),
+        )
     with TestClient(app) as c:
         yield c
 

@@ -8,7 +8,7 @@ services:
     plan: free
     region: singapore
     branch: master
-    buildCommand: pip install -r requirements-api.txt pandas pyarrow && python -m src.db_export
+    buildCommand: pip install -r requirements-api.txt && python -m src.db_export
     startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/health
     envVars:

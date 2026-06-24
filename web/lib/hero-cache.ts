@@ -39,33 +39,45 @@ async function fetchJson<T>(path: string): Promise<T | null> {
   }
 }
 
-/** Prefetch landing hero endpoints in parallel (call while splash is visible). */
-export async function prefetchHeroBundle(timeoutMs = 25_000): Promise<boolean> {
-  // Warm the heavy map chunk while API data loads.
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchHeroOnce(): Promise<boolean> {
   void import("@/components/landing/HeroMapDeck");
 
-  const work = Promise.all([
-    fetchJson<Kpis>("/api/kpis").then((d) => d && setCache(HERO_CACHE_KEYS.kpis, d)),
-    fetchJson<Hotspot[]>("/api/hotspots?limit=20").then(
-      (d) => d && setCache(HERO_CACHE_KEYS.hotspots, d),
-    ),
-    fetchJson<ParkingSpot[]>("/api/parking?limit=12").then(
-      (d) => d && setCache(HERO_CACHE_KEYS.parking, d),
-    ),
-  ]).then(
-    (results) => results.filter(Boolean).length >= 2,
-    () => false,
-  );
-
-  return Promise.race([
-    work,
-    new Promise<boolean>((resolve) => setTimeout(() => resolve(false), timeoutMs)),
+  const [kpis, hotspots, parking] = await Promise.all([
+    fetchJson<Kpis>("/api/kpis"),
+    fetchJson<Hotspot[]>("/api/hotspots?limit=20"),
+    fetchJson<ParkingSpot[]>("/api/parking?limit=12"),
   ]);
+
+  if (kpis) setCache(HERO_CACHE_KEYS.kpis, kpis);
+  if (hotspots && hotspots.length >= 3) {
+    setCache(HERO_CACHE_KEYS.hotspots, hotspots);
+  }
+  if (parking && parking.length > 0) {
+    setCache(HERO_CACHE_KEYS.parking, parking);
+  }
+
+  return hasHeroCache();
+}
+
+/** Prefetch landing hero endpoints in parallel (call while splash is visible). */
+export async function prefetchHeroBundle(timeoutMs = 25_000): Promise<boolean> {
+  const deadline = Date.now() + timeoutMs;
+
+  while (Date.now() < deadline) {
+    if (await fetchHeroOnce()) return true;
+    await sleep(2_000);
+  }
+
+  return hasHeroCache();
 }
 
 export function hasHeroCache(): boolean {
   return (
-    peekHeroCache(HERO_CACHE_KEYS.kpis) != null &&
-    peekHeroCache(HERO_CACHE_KEYS.hotspots) != null
+    peekHeroCache<Kpis>(HERO_CACHE_KEYS.kpis) != null &&
+    (peekHeroCache<Hotspot[]>(HERO_CACHE_KEYS.hotspots)?.length ?? 0) >= 3
   );
 }

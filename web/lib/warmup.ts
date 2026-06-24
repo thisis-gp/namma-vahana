@@ -166,7 +166,9 @@ export async function warmBackend(
           step: 1,
         });
         const { prefetchHeroBundle } = await import("./hero-cache");
-        await prefetchHeroBundle();
+        const ready = await prefetchHeroBundle();
+        emit(true);
+        return ready;
       }
       emit(true);
       return true;
