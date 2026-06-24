@@ -91,18 +91,7 @@ export default function HeroMapDeck({
       }
       if (clipped.length > 1) return clipped;
     }
-    return [
-      PATROL_ORIGIN,
-      [
-        PATROL_ORIGIN[0] + (destination.lon - PATROL_ORIGIN[0]) * 0.35,
-        PATROL_ORIGIN[1] + (destination.lat - PATROL_ORIGIN[1]) * 0.35,
-      ],
-      [
-        PATROL_ORIGIN[0] + (destination.lon - PATROL_ORIGIN[0]) * 0.72,
-        PATROL_ORIGIN[1] + (destination.lat - PATROL_ORIGIN[1]) * 0.72,
-      ],
-      [destination.lon, destination.lat],
-    ];
+    return [];
   }, [routePath, destination]);
 
   const trip = useMemo(
@@ -336,17 +325,15 @@ export default function HeroMapDeck({
     return [
       heat,
       dots,
-      patrolLineGlow,
-      patrolLine,
-      patrol,
+      ...(localRoute.length > 1
+        ? [patrolLineGlow, patrolLine, patrol, vehicleGlow, vehicle]
+        : []),
       spotlightRing,
       destinationPin,
       destinationLabel,
       depot,
       park,
       parkingLabels,
-      vehicleGlow,
-      vehicle,
     ];
   }, [
     hotspots,

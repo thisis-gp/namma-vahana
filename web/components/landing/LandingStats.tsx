@@ -15,10 +15,14 @@ export default function LandingStats() {
           <div>
             <p className="eyebrow mb-3">The insight everything is built on</p>
             <h2 className="font-display text-3xl font-extrabold leading-tight tracking-tight sm:text-[2.6rem]">
-              <span className="text-cobalt">
-                {k ? pct(k.top20_impact_share, 0) : "34%"}
-              </span>{" "}
-              of the city’s parking chaos comes from just 20 streets.
+              {k ? (
+                <>
+                  <span className="text-cobalt">{pct(k.top20_impact_share, 0)}</span>{" "}
+                  of the city’s parking chaos comes from just 20 streets.
+                </>
+              ) : (
+                <span className="text-ink-muted">Loading violation intelligence…</span>
+              )}
             </h2>
             <p className="mt-4 max-w-lg text-lg leading-relaxed text-ink-muted">
               Violations cluster hard. That’s bad news if you park blindly — and

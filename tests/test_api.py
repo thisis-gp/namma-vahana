@@ -58,10 +58,10 @@ def test_kpis(client):
     assert r.json()["total_violations"] == 100
 
 
-def test_challans_seed(client):
+def test_challans_empty_by_default(client):
     r = client.get("/api/challans")
     assert r.status_code == 200
-    assert len(r.json()) >= 1
+    assert r.json() == []
 
 
 def test_production_db_not_used(monkeypatch, tmp_path):

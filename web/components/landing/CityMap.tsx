@@ -59,7 +59,7 @@ const SCENES = [
   },
 ];
 
-const DEMO_DESTINATIONS = [
+const SUGGESTED_DESTINATIONS = [
   { name: "MG Road", lat: 12.9757, lon: 77.6055 },
   { name: "Indiranagar 100 Feet Road", lat: 12.9784, lon: 77.6408 },
   { name: "Koramangala Forum", lat: 12.9346, lon: 77.6113 },
@@ -72,9 +72,9 @@ export default function CityMap() {
   const [spotlightIdx, setSpotlightIdx] = useState(0);
   const [paused, setPaused] = useState(false);
   const [cycleProgress, setCycleProgress] = useState(0);
-  const [destination, setDestination] = useState(DEMO_DESTINATIONS[0]);
+  const [destination, setDestination] = useState(SUGGESTED_DESTINATIONS[0]);
   const [destinationQuery, setDestinationQuery] = useState(
-    DEMO_DESTINATIONS[0].name,
+    SUGGESTED_DESTINATIONS[0].name,
   );
   const [routePath, setRoutePath] = useState<[number, number][]>([]);
   const [routeSummary, setRouteSummary] = useState<{
@@ -181,7 +181,7 @@ export default function CityMap() {
         if (!alive || controller.signal.aborted) return;
         setRoutePath([]);
         setRouteSummary(null);
-        setRouteStatus("Demo route");
+        setRouteStatus("");
       }
     };
     loadRoute();
@@ -227,10 +227,10 @@ export default function CityMap() {
       const query = value.trim();
       if (!query) return;
       const next =
-        DEMO_DESTINATIONS.find(
+        SUGGESTED_DESTINATIONS.find(
           (d) => d.name.toLowerCase() === query.toLowerCase(),
         ) ??
-        DEMO_DESTINATIONS.find((d) =>
+        SUGGESTED_DESTINATIONS.find((d) =>
           d.name.toLowerCase().includes(query.toLowerCase()),
         );
       if (next) {
@@ -274,8 +274,8 @@ export default function CityMap() {
 
   const filteredSuggestions = useMemo(() => {
     const q = destinationQuery.trim().toLowerCase();
-    if (!q) return DEMO_DESTINATIONS;
-    return DEMO_DESTINATIONS.filter((d) => d.name.toLowerCase().includes(q));
+    if (!q) return SUGGESTED_DESTINATIONS;
+    return SUGGESTED_DESTINATIONS.filter((d) => d.name.toLowerCase().includes(q));
   }, [destinationQuery]);
 
   return (
@@ -364,8 +364,9 @@ export default function CityMap() {
           </div>
         ) : null}
 
-        {/* Live badge */}
-        <div className="absolute right-4 top-4 z-10 hidden items-center gap-2 sm:flex">
+        {/* Live badge — only after OSRM returns a real route */}
+        {routeStatus ? (
+          <div className="absolute right-4 top-4 z-10 hidden items-center gap-2 sm:flex">
           <span className="flex items-center gap-1.5 rounded-full border border-white/70 bg-white/88 px-2.5 py-1 shadow-sm backdrop-blur-md">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-ok opacity-60" />
@@ -376,6 +377,7 @@ export default function CityMap() {
             </span>
           </span>
         </div>
+        ) : null}
 
         {model ? (
           <form

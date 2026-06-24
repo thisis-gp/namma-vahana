@@ -2,6 +2,7 @@ import Link from "next/link";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import CityMap from "@/components/landing/CityMap";
+import HeroViolationsBadge from "@/components/landing/HeroViolationsBadge";
 import ActivityTicker from "@/components/hero/ActivityTicker";
 import LandingStats from "@/components/landing/LandingStats";
 import { BRAND } from "@/lib/brand";
@@ -43,9 +44,7 @@ export default function Landing() {
                 <span className="rounded-full border border-line bg-white/75 px-3 py-1">
                   {BRAND.tagline}
                 </span>
-                <span className="rounded-full border border-line bg-white/75 px-3 py-1">
-                  2,98,443 violations analyzed
-                </span>
+                <HeroViolationsBadge />
               </div>
 
               {/* Two doors */}

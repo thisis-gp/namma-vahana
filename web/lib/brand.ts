@@ -6,7 +6,7 @@ export const BRAND = {
   meaning: "Our ride, our roads",
   tagline: "Smart parking for Namma Bengaluru",
   description:
-    "Where parking violations cluster, when to enforce, and the patrol plan that covers more with the same units. Built on 298,443 analyzed violations.",
+    "Where parking violations cluster, when to enforce, and the patrol plan that covers more with the same units. Built on Bengaluru enforcement data.",
   productLabel: "Namma Vahana", // charts, proof section
 } as const;
 

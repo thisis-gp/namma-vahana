@@ -9,9 +9,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.config import CORS_ORIGINS, IS_PRODUCTION
 from backend.database import init_db
 from src.db_export import ensure_analytics_loaded
-from backend.repositories.officers import seed_officers_if_empty
-from backend.repositories.operations import seed_challans_if_empty, seed_reports_if_empty
-from backend.repositories.parking import seed_parking_if_empty
 from backend.routers import analytics_router, health_router, operations_router
 
 
@@ -19,10 +16,6 @@ from backend.routers import analytics_router, health_router, operations_router
 async def lifespan(_app: FastAPI):
     init_db()
     ensure_analytics_loaded()
-    seed_challans_if_empty()
-    seed_reports_if_empty()
-    seed_parking_if_empty()
-    seed_officers_if_empty()
     yield
 
 

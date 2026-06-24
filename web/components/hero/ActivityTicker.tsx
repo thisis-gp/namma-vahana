@@ -10,21 +10,34 @@ export default function ActivityTicker() {
   const reports = useApi(() => api.reports(), []);
   const challans = useApi(() => api.challans(), []);
 
+  const reportsReady = reports.data != null && !reports.loading;
+  const challansReady = challans.data != null && !challans.loading;
+  const kpisReady = k.data != null && !k.loading;
+
   const all = reports.data ?? [];
   const verified = all.filter((r) => r.status === "Verified").length;
   const pending = all.filter((r) => r.status === "Pending").length;
 
   const items = [
-    { label: "citizen reports", value: all.length ? fmt(all.length) : "—" },
-    { label: "verified by police", value: fmt(verified) },
-    { label: "awaiting review", value: fmt(pending) },
+    {
+      label: "citizen reports",
+      value: reportsReady ? fmt(all.length) : "—",
+    },
+    {
+      label: "verified by police",
+      value: reportsReady ? fmt(verified) : "—",
+    },
+    {
+      label: "awaiting review",
+      value: reportsReady ? fmt(pending) : "—",
+    },
     {
       label: "challans on record",
-      value: challans.data ? fmt(challans.data.length) : "—",
+      value: challansReady ? fmt(challans.data!.length) : "—",
     },
     {
       label: "coverage vs reactive",
-      value: k.data ? `+${k.data.uplift_pp.toFixed(1)}pp` : "—",
+      value: kpisReady ? `+${k.data!.uplift_pp.toFixed(1)}pp` : "—",
       accent: true,
     },
   ];
