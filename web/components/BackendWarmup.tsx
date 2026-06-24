@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { LogoMark } from "@/components/brand/Logo";
 import { BRAND } from "@/lib/brand";
@@ -23,11 +24,21 @@ export default function BackendWarmup({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname() ?? "/";
+  const onLanding = pathname === "/";
   const [visible, setVisible] = useState(false);
   const [exiting, setExiting] = useState(false);
   const [message, setMessage] = useState("Connecting…");
   const [progress, setProgress] = useState(0);
   const [showContinue, setShowContinue] = useState(false);
+
+  // Never block officer/resident routes — judges navigate there immediately.
+  useEffect(() => {
+    if (!onLanding) {
+      setVisible(false);
+      setExiting(true);
+    }
+  }, [onLanding]);
 
   useEffect(() => {
     let cancelled = false;
@@ -46,6 +57,12 @@ export default function BackendWarmup({
     };
 
     const run = async () => {
+      // Background warm on sub-routes; no splash.
+      if (!onLanding) {
+        void prefetchHeroBundle(12_000);
+        return;
+      }
+
       if (isWarmupPreview()) {
         sessionStorage.removeItem(WARM_SESSION_KEY);
         setVisible(true);
@@ -104,7 +121,7 @@ export default function BackendWarmup({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [onLanding]);
 
   return (
     <>
@@ -113,7 +130,7 @@ export default function BackendWarmup({
         {visible ? (
           <motion.div
             key="warmup"
-            className="warmup-minimal fixed inset-0 z-[100] flex flex-col items-center justify-center px-6"
+            className="warmup-minimal pointer-events-none fixed inset-0 z-[100] flex flex-col items-center justify-center px-6"
             initial={{ opacity: 1 }}
             animate={{ opacity: exiting ? 0 : 1 }}
             exit={{ opacity: 0 }}
@@ -159,7 +176,7 @@ export default function BackendWarmup({
               {showContinue ? (
                 <button
                   type="button"
-                  className="mt-8 text-sm text-ink-faint underline-offset-4 transition hover:text-ink hover:underline"
+                  className="pointer-events-auto mt-8 text-sm text-ink-faint underline-offset-4 transition hover:text-ink hover:underline"
                   onClick={() => {
                     setExiting(true);
                     setVisible(false);
